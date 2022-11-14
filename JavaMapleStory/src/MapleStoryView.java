@@ -219,7 +219,7 @@ public class MapleStoryView extends JFrame {
 		}
 	}
 	
-	//중력
+	//중력 : 나중에 네트워크 스레드에 추가
 	class DebugTime extends Thread{
 		int deltatime = 0;
 		@Override
