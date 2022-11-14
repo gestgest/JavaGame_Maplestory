@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import javax.swing.ImageIcon;
 
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Color;
 
@@ -62,9 +65,19 @@ public class MapleStoryView extends JFrame {
 	private ObjectOutputStream oos;
 	
 	//펜
-	private JPanel contentPane;
+	private GamePanel contentPane;
 
+	private ImageIcon walk_1 = new ImageIcon("src/res/img/light-191.png");
+	private ImageIcon walk_2 = new ImageIcon("src/res/img/light-194.png");
+	private ImageIcon walk_3 = new ImageIcon("src/res/img/light-197.png");
+	private ImageIcon walk_4 = new ImageIcon("src/res/img/light-200.png");
 	
+	   //디버그
+	private ImageIcon idleIcon =  new ImageIcon("src/res/img/debug.png");
+	private Image idleImage = idleIcon.getImage();
+	
+	private int x = 100,y = 100;
+
 	
 	
 	/**
@@ -75,13 +88,14 @@ public class MapleStoryView extends JFrame {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(300, 100, 1200, 900);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane = new GamePanel();
 		
 		setContentPane(contentPane);
-		contentPane.setLayout(null);
+		
 		setVisible(true);
-
+		DebugTime debugTime = new DebugTime();
+		debugTime.start();
+		
 		//try {
 			//socket = new Socket(ip_addr, Integer.parseInt(port_no));
 
@@ -103,15 +117,68 @@ public class MapleStoryView extends JFrame {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
 		//}
-
 	}
+	
+	//메인 메인 판넬
+	private class GamePanel extends JPanel{
+		
+		public GamePanel()
+		{
+			setLayout(null);
+			setBorder(new EmptyBorder(5, 5, 5, 5));
+			
+			addKeyListener(new KeyEventEx());
+
+			setFocusable(true);
+			requestFocus();
+		}
+		
+		public void paintComponent(Graphics g)
+		{
+			super.paintComponent(g);
+			g.drawImage(idleImage,x,y,46,74,this);
+		}
+		
+		//키 이벤트
+		private class KeyEventEx extends KeyAdapter{
+			@Override
+			public void keyPressed(KeyEvent e)
+			{
+				
+				int keydown = e.getKeyCode();
+				switch(keydown) {
+				case KeyEvent.VK_LEFT:
+					x -= 3;
+					contentPane.repaint();
+					break;
+				case KeyEvent.VK_RIGHT:
+					x += 3;
+					contentPane.repaint();
+					break;
+				case KeyEvent.VK_UP:
+					break;
+				case KeyEvent.VK_DOWN:
+					break;
+				case KeyEvent.VK_ALT:
+					y -= 30;
+					contentPane.repaint();
+					contentPane.setFocusable(true);
+					contentPane.requestFocus();
+					break;
+				}
+			}
+		}
+	}
+	
+	
 
 	// Server Message를 수신해서 화면에 표시 [읽기]
 	class ListenNetwork extends Thread {
 		public void run() {
 			while (true) {
 				try {
-
+					
+					
 					Object obcm = null;
 					String msg = null;
 					//ChatMsg cm;
@@ -148,6 +215,37 @@ public class MapleStoryView extends JFrame {
 					} // catch문 끝
 				} // 바깥 catch문끝
 
+			}
+		}
+	}
+	
+	//중력
+	class DebugTime extends Thread{
+		int deltatime = 0;
+		@Override
+		public void run() {
+			long time = System.currentTimeMillis();
+			while (true) {
+				try {
+					long aftertime = System.currentTimeMillis();
+					if(aftertime - time <= 0) {
+						continue;
+					}
+					deltatime += (int)(aftertime - time);
+					//System.out.println(deltatime);
+					if(10 <= deltatime)
+					{
+						deltatime -= 10;
+						//디버그
+						if(y <= 500)
+							y += 4;
+						contentPane.repaint();
+					}
+					time = aftertime;
+					
+				}catch (Exception e) {
+					break;
+				}
 			}
 		}
 	}
