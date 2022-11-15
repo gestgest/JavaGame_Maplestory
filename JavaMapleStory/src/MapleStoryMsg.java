@@ -1,15 +1,15 @@
-// ChatMsg.java Ã¤ÆÃ ¸Ş½ÃÁö ObjectStream ¿ë.
+// ChatMsg.java ì±„íŒ… ë©”ì‹œì§€ ObjectStream ìš©.
 import java.io.Serializable;
 import javax.swing.ImageIcon;
 
-class ChatMsg implements Serializable {
+class MapleStoryMsg implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
-	private String code; // 100:·Î±×ÀÎ, 400:·Î±×¾Æ¿ô, 200:Ã¤ÆÃ¸Ş½ÃÁö, 300:Image
+	private String code; // 100:ë¡œê·¸ì¸, 400:ë¡œê·¸ì•„ì›ƒ, 200:ì±„íŒ…ë©”ì‹œì§€, 300:Image
 	private String data;
 	public ImageIcon img;
 
-	public ChatMsg(String id, String code, String msg) {
+	public MapleStoryMsg(String id, String code, String msg) {
 		this.id = id;
 		this.code = code;
 		this.data = msg;

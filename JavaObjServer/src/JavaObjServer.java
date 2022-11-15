@@ -136,7 +136,7 @@ public class JavaObjServer extends JFrame {
 		textArea.setCaretPosition(textArea.getText().length());
 	}
 
-	public void AppendObject(ChatMsg msg) {
+	public void AppendObject(MapleStoryMsg msg) {
 		// textArea.append("사용자로부터 들어온 object : " + str+"\n");
 		textArea.append("code = " + msg.getCode() + "\n");
 		textArea.append("id = " + msg.getId() + "\n");
@@ -256,7 +256,7 @@ public class JavaObjServer extends JFrame {
 //				byte[] bb;
 //				bb = MakePacket(msg);
 //				dos.write(bb, 0, bb.length);
-				ChatMsg obcm = new ChatMsg("SERVER", "200", msg);
+				MapleStoryMsg obcm = new MapleStoryMsg("SERVER", "200", msg);
 				oos.writeObject(obcm);
 			} catch (IOException e) {
 				AppendText("dos.writeObject() error");
@@ -280,7 +280,7 @@ public class JavaObjServer extends JFrame {
 		// 귓속말 전송
 		public void WritePrivate(String msg) {
 			try {
-				ChatMsg obcm = new ChatMsg("귓속말", "200", msg);
+				MapleStoryMsg obcm = new MapleStoryMsg("귓속말", "200", msg);
 				oos.writeObject(obcm);
 			} catch (IOException e) {
 				AppendText("dos.writeObject() error");
@@ -341,7 +341,7 @@ public class JavaObjServer extends JFrame {
 //					msg = msg.trim(); // 앞뒤 blank NULL, \n 모두 제거
 					Object obcm = null;
 					String msg = null;
-					ChatMsg cm = null;
+					MapleStoryMsg cm = null;
 					if (socket == null)
 						break;
 					try {
@@ -353,8 +353,8 @@ public class JavaObjServer extends JFrame {
 					}
 					if (obcm == null)
 						break;
-					if (obcm instanceof ChatMsg) {
-						cm = (ChatMsg) obcm;
+					if (obcm instanceof MapleStoryMsg) {
+						cm = (MapleStoryMsg) obcm;
 						AppendObject(cm);
 					} else
 						continue;

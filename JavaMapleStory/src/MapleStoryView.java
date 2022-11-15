@@ -84,7 +84,7 @@ public class MapleStoryView extends JFrame {
 	 * Create the frame.
 	 */
 	//매개변수 String username , String ip_addr, String port_no
-	public MapleStoryView() {
+	public MapleStoryView(String username, String ip_addr, String port_no) {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(300, 100, 1200, 900);
@@ -96,27 +96,27 @@ public class MapleStoryView extends JFrame {
 		DebugTime debugTime = new DebugTime();
 		debugTime.start();
 		
-		//try {
-			//socket = new Socket(ip_addr, Integer.parseInt(port_no));
+		try {
+			socket = new Socket(ip_addr, Integer.parseInt(port_no));
 
-			//oos = new ObjectOutputStream(socket.getOutputStream());
-			//oos.flush();
-			//ois = new ObjectInputStream(socket.getInputStream());
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			oos.flush();
+			ois = new ObjectInputStream(socket.getInputStream());
 
 			
 			//로그인 메세지 보내는 기능
-			//ChatMsg obcm = new ChatMsg(UserName, "100", "Hello");
-			//SendObject(obcm);
+			MapleStoryMsg obcm = new MapleStoryMsg(UserName, "100", "Hello");
+			SendObject(obcm);
 			
 			//네트워크 스레드 [받는 기능]
-			//ListenNetwork net = new ListenNetwork();
-			//net.start();
+			ListenNetwork net = new ListenNetwork();
+			net.start();
 			
 
-		//} catch (NumberFormatException | IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		//}
+		} catch (NumberFormatException | IOException e) {
+			//TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//메인 메인 판넬
@@ -181,7 +181,7 @@ public class MapleStoryView extends JFrame {
 					
 					Object obcm = null;
 					String msg = null;
-					//ChatMsg cm;
+					MapleStoryMsg cm;
 					try {
 						obcm = ois.readObject();
 					} catch (ClassNotFoundException e) {
@@ -192,10 +192,10 @@ public class MapleStoryView extends JFrame {
 					if (obcm == null)
 						break;
 					//쳇인경우
-					//if (obcm instanceof ChatMsg) {
-						//cm = (ChatMsg) obcm;
-						//msg = String.format("[%s] %s", cm.getId(), cm.getData());
-					//} 
+					if (obcm instanceof MapleStoryMsg) {
+						cm = (MapleStoryMsg) obcm;
+						msg = String.format("[%s] %s", cm.getId(), cm.getData());
+					} 
 					else
 						continue;
 					//switch () - 프로토콜 분류
@@ -275,9 +275,9 @@ public class MapleStoryView extends JFrame {
 		try {
 			
 			//보내기
-			//ChatMsg obcm = new ChatMsg(UserName, "200", msg);
+			MapleStoryMsg obcm = new MapleStoryMsg(UserName, "200", msg);
 			//예시 보내기
-			oos.writeObject(new Object());
+			oos.writeObject(obcm);
 		} catch (IOException e) {
 			// AppendText("dos.write() error");
 			//에러메세지
