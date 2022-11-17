@@ -37,7 +37,9 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
@@ -76,18 +78,38 @@ public class MapleStoryView extends JFrame {
 	private ImageIcon idleIcon =  new ImageIcon("src/res/img/debug.png");
 	private Image idleImage = idleIcon.getImage();
 	
-	private int x = 100,y = 100;
-
+	//나중에 캐릭터 클래스 만들거임
+	private int x = 0,y = 0;
+	
+	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
+	private int width, height;
+	double screenWidth , screenHeight;
+	
 	
 	
 	/**
 	 * Create the frame.
 	 */
+	//모니터
 	//매개변수 String username , String ip_addr, String port_no
 	public MapleStoryView(String username, String ip_addr, String port_no) {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(300, 100, 1200, 900);
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		screenWidth = dim.getWidth();	
+		screenHeight = dim.getHeight();
+		
+		if(screenHeight < 900) {
+			width = 800; height = 600;
+		}
+		else {
+			width = 1200; height = 900;
+		}
+
+		int screenX = (int) ((screenWidth - width) / 2);
+		int screenY = (int) ((screenHeight - height) / 2);
+		
+		setBounds(screenX, screenY, width, height);
 		contentPane = new GamePanel();
 		
 		setContentPane(contentPane);
@@ -150,6 +172,8 @@ public class MapleStoryView extends JFrame {
 				case KeyEvent.VK_LEFT:
 					x -= 3;
 					contentPane.repaint();
+					//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
+					//이후 오브젝트를 받으면 그때 repaint를 해야한다
 					break;
 				case KeyEvent.VK_RIGHT:
 					x += 3;
@@ -237,9 +261,12 @@ public class MapleStoryView extends JFrame {
 					{
 						deltatime -= 10;
 						//디버그
-						if(y <= 500)
+						if(y <= height - 74)
 							y += 4;
+						//repaint대신 send
+						
 						contentPane.repaint();
+						System.out.println(height - 74);
 					}
 					time = aftertime;
 					
