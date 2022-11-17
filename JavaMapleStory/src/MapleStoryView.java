@@ -73,9 +73,14 @@ public class MapleStoryView extends JFrame {
 	private ImageIcon walk_2 = new ImageIcon("src/res/img/light-194.png");
 	private ImageIcon walk_3 = new ImageIcon("src/res/img/light-197.png");
 	private ImageIcon walk_4 = new ImageIcon("src/res/img/light-200.png");
+	private ImageIcon UIImageIcon = new ImageIcon("src/res/img/GameUI.png");
+	private ImageIcon backgroundIcon = new ImageIcon("src/res/img/Background.png");
+	private ImageIcon idleIcon =  new ImageIcon("src/res/img/debug.png");
+
+	private Image UIImage = UIImageIcon.getImage();
+	private Image backgroundImage = backgroundIcon.getImage();
 	
 	   //디버그
-	private ImageIcon idleIcon =  new ImageIcon("src/res/img/debug.png");
 	private Image idleImage = idleIcon.getImage();
 	
 	//나중에 캐릭터 클래스 만들거임
@@ -116,7 +121,7 @@ public class MapleStoryView extends JFrame {
 		
 		setVisible(true);
 		DebugTime debugTime = new DebugTime();
-		debugTime.start();
+		//debugTime.start();
 		
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
@@ -148,6 +153,8 @@ public class MapleStoryView extends JFrame {
 		{
 			setLayout(null);
 			setBorder(new EmptyBorder(5, 5, 5, 5));
+			UIBar uibar = new UIBar();
+			add(uibar);
 			
 			addKeyListener(new KeyEventEx());
 
@@ -158,7 +165,9 @@ public class MapleStoryView extends JFrame {
 		public void paintComponent(Graphics g)
 		{
 			super.paintComponent(g);
+			g.drawImage(backgroundImage,0,0,width,height,this);
 			g.drawImage(idleImage,x,y,46,74,this);
+			
 		}
 		
 		//키 이벤트
@@ -190,6 +199,27 @@ public class MapleStoryView extends JFrame {
 					contentPane.requestFocus();
 					break;
 				}
+			}
+		}
+		
+		//UI바
+		private class UIBar extends JPanel{
+			private int UIy; 
+			private int UIx; 
+			private int UIheight; 
+			private int UIwidth; 
+			public UIBar() {
+				
+				UIwidth = width;
+				UIheight = height / 8;
+				UIx = 0;
+				UIy = UIheight * 7;
+				setBounds(UIx,UIy,UIwidth,UIheight);
+				
+			}
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g); //795 / 41 
+				g.drawImage(UIImage,0,0,width,width * 41 / 795,this);
 			}
 		}
 	}
