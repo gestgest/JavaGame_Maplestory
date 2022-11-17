@@ -8,6 +8,7 @@ class MapleStoryMsg implements Serializable {
 	private String code; // 100:로그인, 400:로그아웃, 200:채팅메시지, 300:Image, player : 400
 	private String data;
 	public ImageIcon img;
+	//코드와 짜잘한 x,y와 같은 사소한 data값을 넣고 프로토콜로 분류한다
 
 	public MapleStoryMsg(String id, String code, String msg) {
 		this.id = id;
