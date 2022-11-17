@@ -9,8 +9,10 @@ import javax.swing.SwingConstants;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
 public class LoginClient extends JFrame {
@@ -21,6 +23,10 @@ public class LoginClient extends JFrame {
 
 	ImageIcon backgroundIcon = new ImageIcon("src/res/img/LoginBackground.jpg");
 	Image backgroundImg = backgroundIcon.getImage();
+	
+	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
+	private int width, height;
+	double screenWidth , screenHeight;
 	/**
 	 * Launch the application.
 	 */
@@ -31,8 +37,21 @@ public class LoginClient extends JFrame {
 	public LoginClient() {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		screenWidth = dim.getWidth();	
+		screenHeight = dim.getHeight();
 		
-		setBounds(300, 100, 1200, 900);
+		if(screenHeight < 900) {
+			width = 800; height = 600;
+		}
+		else {
+			width = 1200; height = 900;
+		}
+		int x = (int) ((screenWidth - width) / 2);
+		int y = (int) ((screenHeight - height) / 2);
+		
+		setBounds(x, y, width, height);
 		LoginPanel contentPane = new LoginPanel();
 		setContentPane(contentPane);
 		
@@ -40,9 +59,12 @@ public class LoginClient extends JFrame {
 	
 	class LoginPanel extends JPanel
 	{
-		private final int px = 750, py = 300;
+		private int px, py;
 		public LoginPanel()
 		{
+			
+			px = width * 19 / 32;
+			py = height * 7 / 24;
 			
 			setBorder(new EmptyBorder(5, 5, 5, 5));
 			setLayout(null);
@@ -97,7 +119,7 @@ public class LoginClient extends JFrame {
 		
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			g.drawImage(backgroundImg,0,0,1200,900,this);
+			g.drawImage(backgroundImg,0,0,width,height,this);
 		}
 	}
 	
