@@ -52,6 +52,8 @@ public class LoginClient extends JFrame {
 		int y = (int) ((screenHeight - height) / 2);
 		
 		setBounds(x, y, width, height);
+		setResizable(false);
+		
 		LoginPanel contentPane = new LoginPanel();
 		setContentPane(contentPane);
 		

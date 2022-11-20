@@ -63,6 +63,7 @@ public class JavaObjServer extends JFrame {
 	public JavaObjServer() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 338, 440);
+		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -401,7 +402,7 @@ public class JavaObjServer extends JFrame {
 						}
 					} else if (cm.getCode().matches("300")) {
 						WriteAllObject(cm);
-					} else if (cm.getCode().matches("400")) { // logout message 贸府
+					} else if (cm.getCode().matches("400")) { // logout message 贸府 肺弊酒眶
 						Logout();
 						break;
 					}  else if (cm.getCode().matches("500")) {

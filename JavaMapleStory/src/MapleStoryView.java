@@ -10,6 +10,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.Color;
 import java.awt.Dimension;
 
@@ -50,9 +53,8 @@ import javax.swing.JToggleButton;
 import javax.swing.JList;
 
 public class MapleStoryView extends JFrame {
-	/**
-	 * 
-	 */
+	
+	//서버관련
 	private static final long serialVersionUID = 1L;
 	private String UserName;
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
@@ -65,10 +67,14 @@ public class MapleStoryView extends JFrame {
 	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
+	//////////////////////////////////////////////////////////////////////////////////////////
+	
 	
 	//펜
 	private GamePanel contentPane;
+	//////////////////////////////////////////////////////////////////////////////////////////
 
+	//이미지 자료
 	private ImageIcon walk_1 = new ImageIcon("src/res/img/light-191.png");
 	private ImageIcon walk_2 = new ImageIcon("src/res/img/light-194.png");
 	private ImageIcon walk_3 = new ImageIcon("src/res/img/light-197.png");
@@ -79,16 +85,31 @@ public class MapleStoryView extends JFrame {
 
 	private Image UIImage = UIImageIcon.getImage();
 	private Image backgroundImage = backgroundIcon.getImage();
+	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	   //디버그
 	private Image idleImage = idleIcon.getImage();
 	
-	//나중에 캐릭터 클래스 만들거임
-	private int x = 0,y = 0;
-	
 	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
 	private int width, height;
 	double screenWidth , screenHeight;
+
+	
+	//단축기
+	final int LEFT_PRESSED	=0x001;
+	final int RIGHT_PRESSED	=0x002;
+	
+	
+	
+	
+	//나중에 캐릭터 클래스 만들거임
+	private int x = 0,y = 0;
+
+	// 현재시간
+	private long pretime;
+	private final int delay = 17; //17 / 1000초 : 58 (프레임 / 초)
+	
+	int keybuff;//키 버퍼값
 	
 	
 	
@@ -99,7 +120,8 @@ public class MapleStoryView extends JFrame {
 	//매개변수 String username , String ip_addr, String port_no
 	public MapleStoryView(String username, String ip_addr, String port_no) {
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//온전하게 서버종료
+		addWindowListener(new MyWindowAdapter());
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		screenWidth = dim.getWidth();	
 		screenHeight = dim.getHeight();
@@ -115,13 +137,14 @@ public class MapleStoryView extends JFrame {
 		int screenY = (int) ((screenHeight - height) / 2);
 		
 		setBounds(screenX, screenY, width, height);
+		setResizable(false);
 		contentPane = new GamePanel();
 		
 		setContentPane(contentPane);
 		
 		setVisible(true);
 		DebugTime debugTime = new DebugTime();
-		//debugTime.start();
+		debugTime.start();
 		
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
@@ -178,15 +201,15 @@ public class MapleStoryView extends JFrame {
 				
 				int keydown = e.getKeyCode();
 				switch(keydown) {
+				//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
+				//이후 오브젝트를 받으면 그때 repaint를 해야한다
+				
+				//버퍼를 둔 이유는 
 				case KeyEvent.VK_LEFT:
-					x -= 3;
-					contentPane.repaint();
-					//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
-					//이후 오브젝트를 받으면 그때 repaint를 해야한다
+					keybuff|=LEFT_PRESSED;//멀티키의 누르기 처리
 					break;
 				case KeyEvent.VK_RIGHT:
-					x += 3;
-					contentPane.repaint();
+					keybuff|=RIGHT_PRESSED;
 					break;
 				case KeyEvent.VK_UP:
 					break;
@@ -194,9 +217,22 @@ public class MapleStoryView extends JFrame {
 					break;
 				case KeyEvent.VK_ALT:
 					y -= 30;
-					contentPane.repaint();
 					contentPane.setFocusable(true);
 					contentPane.requestFocus();
+					break;
+				}
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) 
+			{
+				int keydown = e.getKeyCode();
+				switch(keydown) {
+				case KeyEvent.VK_LEFT:
+					keybuff&=~LEFT_PRESSED;
+					break;
+				case KeyEvent.VK_RIGHT:
+					keybuff&=~RIGHT_PRESSED;
 					break;
 				}
 			}
@@ -273,39 +309,7 @@ public class MapleStoryView extends JFrame {
 		}
 	}
 	
-	//중력 : 나중에 네트워크 스레드에 추가
-	class DebugTime extends Thread{
-		int deltatime = 0;
-		@Override
-		public void run() {
-			long time = System.currentTimeMillis();
-			while (true) {
-				try {
-					long aftertime = System.currentTimeMillis();
-					if(aftertime - time <= 0) {
-						continue;
-					}
-					deltatime += (int)(aftertime - time);
-					//System.out.println(deltatime);
-					if(10 <= deltatime)
-					{
-						deltatime -= 10;
-						//디버그
-						if(y <= height - 74)
-							y += 4;
-						//repaint대신 send
-						
-						contentPane.repaint();
-						System.out.println(height - 74);
-					}
-					time = aftertime;
-					
-				}catch (Exception e) {
-					break;
-				}
-			}
-		}
-	}
+	
 
 
 	// Windows 처럼 message 제외한 나머지 부분은 NULL 로 만들기 위한 함수
@@ -354,8 +358,60 @@ public class MapleStoryView extends JFrame {
 		try {
 			oos.writeObject(ob);
 		} catch (IOException e) {
-			// textArea.append("메세지 송신 에러!!\n");
-			//에러메세지
+			//서버오류
+			System.exit(0);
 		}
 	}
+
+	//중력 : 나중에 네트워크 스레드에 추가
+	class DebugTime extends Thread{
+		@Override
+		public void run(){
+			try
+			{
+				while(true){
+					pretime=System.currentTimeMillis();
+
+					contentPane.repaint();//화면 리페인트
+					//process();//각종 충돌 처리
+					//keyprocess();//키 처리
+
+					//프레임 유지
+					if(System.currentTimeMillis()-pretime < delay) 
+						Thread.sleep(delay - System.currentTimeMillis()+pretime);
+						//게임 루프를 처리하는데 걸린 시간을 체크해서 딜레이값에서 차감하여 딜레이를 일정하게 유지한다.
+						//루프 실행 시간이 딜레이 시간보다 크다면 게임 속도가 느려지게 된다.
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	class MyWindowAdapter extends WindowAdapter
+	{
+		// 윈도우를 닫기 위한 부가 클래스. 실제 닫는 동작은
+		// setVisible(false);
+		// dispose();
+		// System.exit(0);
+		// 이상 세 라인으로 이루어진다.
+		//
+		MyWindowAdapter(){
+		}
+		public void windowClosing(WindowEvent e) {
+			Window wnd = e.getWindow();
+
+			//온전하게 로그아웃 됐다고 표시
+			MapleStoryMsg obcm = new MapleStoryMsg(UserName, "400", "Logout");
+			SendObject(obcm);
+			
+			wnd.setVisible(false);
+			wnd.dispose();
+			System.exit(0);
+		}
+	}
+	
 }
+
