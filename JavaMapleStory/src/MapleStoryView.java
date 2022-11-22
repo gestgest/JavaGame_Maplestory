@@ -1,6 +1,4 @@
 
-// JavaObjClientView.java ObjecStram 기반 Client
-//실질적인 채팅 창
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
@@ -49,6 +47,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
+import data.MapleStoryMsg;
+import data.User;
+
 import javax.swing.JToggleButton;
 import javax.swing.JList;
 
@@ -56,7 +58,6 @@ public class MapleStoryView extends JFrame {
 	
 	//서버관련
 	private static final long serialVersionUID = 1L;
-	private String UserName;
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 	
 	private Socket socket; // 연결소켓
@@ -103,6 +104,7 @@ public class MapleStoryView extends JFrame {
 	
 	
 	//나중에 캐릭터 클래스 만들거임
+	private User user;
 	private int x = 0,y = 0;
 
 	// 현재시간
@@ -144,7 +146,10 @@ public class MapleStoryView extends JFrame {
 		
 		setVisible(true);
 		DebugTime debugTime = new DebugTime();
-		debugTime.start();
+		//debugTime.start();
+		
+		//닉네임 설정
+		user = new User(username,x,y,idleIcon);
 		
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
@@ -153,14 +158,21 @@ public class MapleStoryView extends JFrame {
 			oos.flush();
 			ois = new ObjectInputStream(socket.getInputStream());
 
+
 			
 			//로그인 메세지 보내는 기능
-			MapleStoryMsg obcm = new MapleStoryMsg(UserName, "100", "Hello");
-			SendObject(obcm);
+			MapleStoryMsg obcm = new MapleStoryMsg("100");
+			obcm.setName(user.getName());
 			
+			
+			
+			//보내는데 오류
+			SendObject(obcm);
+
 			//네트워크 스레드 [받는 기능]
 			ListenNetwork net = new ListenNetwork();
 			net.start();
+
 			
 
 		} catch (NumberFormatException | IOException e) {
@@ -268,7 +280,6 @@ public class MapleStoryView extends JFrame {
 			while (true) {
 				try {
 					
-					
 					Object obcm = null;
 					String msg = null;
 					MapleStoryMsg cm;
@@ -284,11 +295,15 @@ public class MapleStoryView extends JFrame {
 					//쳇인경우
 					if (obcm instanceof MapleStoryMsg) {
 						cm = (MapleStoryMsg) obcm;
-						msg = String.format("[%s] %s", cm.getId(), cm.getData());
 					} 
 					else
 						continue;
-					//switch () - 프로토콜 분류
+					//프로토콜 구분
+					switch (cm.getCode()) {
+					//로그인
+					case "100":
+						break;
+					}
 					
 				} catch (IOException e) {
 					//에러 메세지 AppendText("ois.readObject() error");
@@ -331,12 +346,14 @@ public class MapleStoryView extends JFrame {
 		return packet;
 	}
 
-	// Server에게 network으로 전송
+	// Server에게 network으로 전송 [write]
 	public void SendMessage(String msg) {
 		try {
 			
 			//보내기
-			MapleStoryMsg obcm = new MapleStoryMsg(UserName, "200", msg);
+			MapleStoryMsg obcm = new MapleStoryMsg("200");
+			//메세지 추가 set★
+			
 			//예시 보내기
 			oos.writeObject(obcm);
 		} catch (IOException e) {
@@ -356,14 +373,16 @@ public class MapleStoryView extends JFrame {
 
 	public void SendObject(Object ob) { // 서버로 메세지를 보내는 메소드
 		try {
+			
 			oos.writeObject(ob);
 		} catch (IOException e) {
 			//서버오류
+			//클래스 단위로 보내지 마라
 			System.exit(0);
 		}
 	}
 
-	//중력 : 나중에 네트워크 스레드에 추가
+	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? ]
 	class DebugTime extends Thread{
 		@Override
 		public void run(){
@@ -404,7 +423,7 @@ public class MapleStoryView extends JFrame {
 			Window wnd = e.getWindow();
 
 			//온전하게 로그아웃 됐다고 표시
-			MapleStoryMsg obcm = new MapleStoryMsg(UserName, "400", "Logout");
+			MapleStoryMsg obcm = new MapleStoryMsg("400");
 			SendObject(obcm);
 			
 			wnd.setVisible(false);
