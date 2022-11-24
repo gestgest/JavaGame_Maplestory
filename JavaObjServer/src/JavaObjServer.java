@@ -6,6 +6,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import data.MapleStoryMsg;
+import data.User;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JLabel;
@@ -44,6 +47,10 @@ public class JavaObjServer extends JFrame {
 	/**
 	 * Launch the application.
 	 */
+	
+	long pretime;
+	int delay = 17; //56프레임
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -63,6 +70,7 @@ public class JavaObjServer extends JFrame {
 	public JavaObjServer() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 338, 440);
+		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -108,12 +116,18 @@ public class JavaObjServer extends JFrame {
 		contentPane.add(btnServerStart);
 	}
 
+	//서버 받는 스레드
 	// 새로운 참가자 accept() 하고 user thread를 새로 생성한다.
-	class AcceptServer extends Thread {
+	class AcceptServer extends Thread 
+	{
+		//컴파일 오류 체크 X
 		@SuppressWarnings("unchecked")
-		public void run() {
-			while (true) { // 사용자 접속을 계속해서 받기 위해 while문
+		public void run() 
+		{
+			while (true) 
+			{ // 사용자 접속을 계속해서 받기 위해 while문
 				try {
+					
 					AppendText("Waiting new clients ...");
 					client_socket = socket.accept(); // accept가 일어나기 전까지는 무한 대기중
 					AppendText("새로운 참가자 from " + client_socket);
@@ -122,6 +136,7 @@ public class JavaObjServer extends JFrame {
 					UserVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
 					AppendText("현재 참가자 수 " + UserVec.size());
+					
 				} catch (IOException e) {
 					AppendText("accept() error");
 					// System.exit(0);
@@ -129,6 +144,7 @@ public class JavaObjServer extends JFrame {
 			}
 		}
 	}
+	
 
 	public void AppendText(String str) {
 		// textArea.append("사용자로부터 들어온 메세지 : " + str+"\n");
@@ -139,86 +155,190 @@ public class JavaObjServer extends JFrame {
 	public void AppendObject(MapleStoryMsg msg) {
 		// textArea.append("사용자로부터 들어온 object : " + str+"\n");
 		textArea.append("code = " + msg.getCode() + "\n");
-		textArea.append("id = " + msg.getId() + "\n");
+		textArea.append("id = " + msg.getName() + "\n");
 		textArea.append("data = " + msg.getData() + "\n");
 		textArea.setCaretPosition(textArea.getText().length());
 	}
 
-	// User 당 생성되는 Thread
+///////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	
+	//서버 시간 관리 스레드
+	class TimeThread extends Thread 
+	{
+		@Override
+		public void run() 
+		{
+			while (true) 
+			{
+				//서버 관리
+				pretime=System.currentTimeMillis();
+				
+				//메세지 뿌리기
+				
+				
+				try {
+					
+				if(System.currentTimeMillis()-pretime < delay)
+					Thread.sleep(delay - System.currentTimeMillis()+pretime);
+				
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//////////////////////////////////////////////////////////////////
+	
+	
+	
+	
+	
+	// 1User 당 생성되는 1Thread
 	// Read One 에서 대기 -> Write All
 	class UserService extends Thread {
-		private InputStream is;
-		private OutputStream os;
-		private DataInputStream dis;
-		private DataOutputStream dos;
 
 		private ObjectInputStream ois;
 		private ObjectOutputStream oos;
 
 		private Socket client_socket;
 		private Vector user_vc;
-		public String UserName = "";
-		public String UserStatus;
-
+		
+		//유저 정보 클래스 하나 넣어야 할듯
+		private User user;
+		
+		//로그인
 		public UserService(Socket client_socket) {
 			// TODO Auto-generated constructor stub
 			// 매개변수로 넘어온 자료 저장
 			this.client_socket = client_socket;
 			this.user_vc = UserVec;
+			
+			
 			try {
-//				is = client_socket.getInputStream();
-//				dis = new DataInputStream(is);
-//				os = client_socket.getOutputStream();
-//				dos = new DataOutputStream(os);
-
 				oos = new ObjectOutputStream(client_socket.getOutputStream());
 				oos.flush();
 				ois = new ObjectInputStream(client_socket.getInputStream());
 
-				// line1 = dis.readUTF();
-				// /login user1 ==> msg[0] msg[1]
-//				byte[] b = new byte[BUF_LEN];
-//				dis.read(b);		
-//				String line1 = new String(b);
-//
-//				//String[] msg = line1.split(" ");
-//				//UserName = msg[1].trim();
-//				UserStatus = "O"; // Online 상태
-//				Login();
 			} catch (Exception e) {
 				AppendText("userService error");
 			}
 		}
 
+		//받기 AppendText("ㄹㄹ"); 
+		public void run() 
+		{
+			while (true) 
+			{ 
+				// 사용자 접속을 계속해서 받기 위해 while문
+				try {
+					Object obcm = null;
+					String msg = null;
+					MapleStoryMsg cm = null;
+					
+					if (socket == null)
+						break;
+
+					
+					try {
+						//왜 못읽냐
+						obcm = ois.readObject();
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
+
+					
+					if (obcm == null)
+						break;
+					
+					if (obcm instanceof MapleStoryMsg) {
+						cm = (MapleStoryMsg) obcm;
+						AppendObject(cm);
+					} else
+						continue;
+					
+					
+					//login
+					if (cm.getCode().matches("100")) 
+					{
+						user = new User(cm.getName());
+						//만약 유저가 처음이면 user.Init();
+						
+						Login();
+					}
+					else if (cm.getCode().matches("200")) {
+					} else if (cm.getCode().matches("300")) {
+						WriteAllObject(cm);
+					} else if (cm.getCode().matches("400")) { // logout message 처리 로그아웃
+						Logout();
+						break;
+					}  else if (cm.getCode().matches("500")) {
+					}  else if (cm.getCode().matches("600")) {
+					}  else if (cm.getCode().matches("700")) {
+					} 
+				} catch (IOException e) {
+					AppendText("ois.readObject() error");
+					try {
+						ois.close();
+						oos.close();
+						client_socket.close();
+						Logout(); // 에러가난 현재 객체를 벡터에서 지운다
+						break;
+					} catch (Exception ee) {
+						break;
+					} // catch문 끝
+				} // 바깥 catch문끝
+			} // while
+		} // run
+		
+		//로그인
 		public void Login() {
-			AppendText("새로운 참가자 " + UserName + " 입장.");
-			WriteOne("Welcome to Java chat server\n");
-			WriteOne(UserName + "님 환영합니다.\n"); // 연결된 사용자에게 정상접속을 알림
-			String msg = "[" + UserName + "]님이 입장 하였습니다.\n";
-			WriteOthers(msg); // 아직 user_vc에 새로 입장한 user는 포함되지 않았다.
+			AppendText("새로운 참가자 " + user.getName() + " 입장.");
+			
+			
+			
+			//100 User
+			MapleStoryMsg msg = new MapleStoryMsg("100");
+			msg.setUser(user);
+			//정보 넣기
+			WriteAllObject(msg);
 		}
 
 		public void Logout() {
-			String msg = "[" + UserName + "]님이 퇴장 하였습니다.\n";
+			//여기가 문제
+			String msg = "[" + user.getName() + "]님이 퇴장 하였습니다.\n";
 			UserVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
-			WriteAll(msg); // 나를 제외한 다른 User들에게 전송
-			AppendText("사용자 " + "[" + UserName + "] 퇴장. 현재 참가자 수 " + UserVec.size());
+			//WriteAll(msg); // 나를 제외한 다른 User들에게 전송
+			AppendText("사용자 " + "[" + user.getName() + "] 퇴장. 현재 참가자 수 " + UserVec.size());
 		}
 
 		// 모든 User들에게 방송. 각각의 UserService Thread의 WriteONe() 을 호출한다.
 		public void WriteAll(String str) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				if (user.UserStatus == "O")
-					user.WriteOne(str);
 			}
 		}
 		// 모든 User들에게 Object를 방송. 채팅 message와 image object를 보낼 수 있다
 		public void WriteAllObject(Object ob) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				if (user.UserStatus == "O")
-					user.WriteOneObject(ob);
+				AppendText(i + " ");
+				//user.WriteOneObject(ob);
 			}
 		}
 
@@ -226,8 +346,7 @@ public class JavaObjServer extends JFrame {
 		public void WriteOthers(String str) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				if (user != this && user.UserStatus == "O")
-					user.WriteOne(str);
+				user.WriteOne(str);
 			}
 		}
 
@@ -256,7 +375,7 @@ public class JavaObjServer extends JFrame {
 //				byte[] bb;
 //				bb = MakePacket(msg);
 //				dos.write(bb, 0, bb.length);
-				MapleStoryMsg obcm = new MapleStoryMsg("SERVER", "200", msg);
+				MapleStoryMsg obcm = new MapleStoryMsg("200");
 				oos.writeObject(obcm);
 			} catch (IOException e) {
 				AppendText("dos.writeObject() error");
@@ -280,7 +399,7 @@ public class JavaObjServer extends JFrame {
 		// 귓속말 전송
 		public void WritePrivate(String msg) {
 			try {
-				MapleStoryMsg obcm = new MapleStoryMsg("귓속말", "200", msg);
+				MapleStoryMsg obcm = new MapleStoryMsg("200");
 				oos.writeObject(obcm);
 			} catch (IOException e) {
 				AppendText("dos.writeObject() error");
@@ -316,128 +435,6 @@ public class JavaObjServer extends JFrame {
 				}
 				Logout();
 			}
-		}
-		
-		public void run() {
-			while (true) { // 사용자 접속을 계속해서 받기 위해 while문
-				try {
-					// String msg = dis.readUTF();
-//					byte[] b = new byte[BUF_LEN];
-//					int ret;
-//					ret = dis.read(b);
-//					if (ret < 0) {
-//						AppendText("dis.read() < 0 error");
-//						try {
-//							dos.close();
-//							dis.close();
-//							client_socket.close();
-//							Logout();
-//							break;
-//						} catch (Exception ee) {
-//							break;
-//						} // catch문 끝
-//					}
-//					String msg = new String(b, "euc-kr");
-//					msg = msg.trim(); // 앞뒤 blank NULL, \n 모두 제거
-					Object obcm = null;
-					String msg = null;
-					MapleStoryMsg cm = null;
-					if (socket == null)
-						break;
-					try {
-						obcm = ois.readObject();
-					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-					if (obcm == null)
-						break;
-					if (obcm instanceof MapleStoryMsg) {
-						cm = (MapleStoryMsg) obcm;
-						AppendObject(cm);
-					} else
-						continue;
-					if (cm.getCode().matches("100")) 
-					{
-						UserName = cm.getId();
-						UserStatus = "O"; // Online 상태
-						Login();
-					} else if (cm.getCode().matches("200")) {
-						msg = String.format("[%s] %s", cm.getId(), cm.getData());
-						AppendText(msg); // server 화면에 출력
-						String[] args = msg.split(" "); // 단어들을 분리한다.
-						if (args.length == 1) { // Enter key 만 들어온 경우 Wakeup 처리만 한다.
-							UserStatus = "O";
-						} else if (args[1].matches("/exit")) {
-							Logout();
-							break;
-						} else if (args[1].matches("/list")) {
-							showList();
-						} else if (args[1].matches("/sleep")) {
-							UserStatus = "S";
-						} else if (args[1].matches("/wakeup")) {
-							UserStatus = "O";
-						} else if (args[1].matches("/to")) { // 귓속말
-							for (int i = 0; i < user_vc.size(); i++) {
-								UserService user = (UserService) user_vc.elementAt(i);
-								if (user.UserName.matches(args[2]) && user.UserStatus.matches("O")) {
-									String msg2 = "";
-									for (int j = 3; j < args.length; j++) {// 실제 message 부분
-										msg2 += args[j];
-										if (j < args.length - 1)
-											msg2 += " ";
-									}
-									// /to 빼고.. [귓속말] [user1] Hello user2..
-									user.WritePrivate(args[0] + " " + msg2 + "\n");
-									//user.WriteOne("[귓속말] " + args[0] + " " + msg2 + "\n");
-									break;
-								}
-							}
-						} else { // 일반 채팅 메시지
-							UserStatus = "O";
-							//WriteAll(msg + "\n"); // Write All
-							WriteAllObject(cm);
-						}
-					} else if (cm.getCode().matches("300")) {
-						WriteAllObject(cm);
-					} else if (cm.getCode().matches("400")) { // logout message 처리
-						Logout();
-						break;
-					}  else if (cm.getCode().matches("500")) {
-						showList();
-					}  else if (cm.getCode().matches("600")) {
-						UserStatus = "S";
-					}  else if (cm.getCode().matches("700")) {
-						UserStatus = "O";
-					} 
-				} catch (IOException e) {
-					AppendText("ois.readObject() error");
-					try {
-//						dos.close();
-//						dis.close();
-						ois.close();
-						oos.close();
-						client_socket.close();
-						Logout(); // 에러가난 현재 객체를 벡터에서 지운다
-						break;
-					} catch (Exception ee) {
-						break;
-					} // catch문 끝
-				} // 바깥 catch문끝
-			} // while
-		} // run
-		
-		private void showList()
-		{
-			WriteOne("User list\n");
-			WriteOne("Name\tStatus\n");
-			WriteOne("-----------------------------\n");
-			for (int i = 0; i < user_vc.size(); i++) {
-				UserService user = (UserService) user_vc.elementAt(i);
-				WriteOne(user.UserName + "\t" + user.UserStatus + "\n");
-			}
-			WriteOne("-----------------------------\n");
 		}
 	}
 
