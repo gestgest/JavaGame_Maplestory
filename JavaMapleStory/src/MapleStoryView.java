@@ -19,6 +19,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -88,7 +90,7 @@ public class MapleStoryView extends JFrame {
 	private Image backgroundImage = backgroundIcon.getImage();
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
-	   //디버그
+   //디버그
 	private Image idleImage = idleIcon.getImage();
 	
 	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
@@ -101,10 +103,9 @@ public class MapleStoryView extends JFrame {
 	final int RIGHT_PRESSED	=0x002;
 	
 	
-	
-	
 	//나중에 캐릭터 클래스 만들거임
 	private User user;
+	private HashMap<String, User> users = new HashMap<String, User>(3);
 	private int x = 0,y = 0;
 
 	// 현재시간
@@ -163,11 +164,20 @@ public class MapleStoryView extends JFrame {
 			//로그인 메세지 보내는 기능
 			MapleStoryMsg obcm = new MapleStoryMsg("100");
 			obcm.setName(user.getName());
-			
-			
-			
-			//보내는데 오류
 			SendObject(obcm);
+			
+			obcm.setCode("101");
+			obcm.setData(user.point.getX());
+			SendObject(obcm);
+			
+			obcm.setCode("102");
+			obcm.setData(user.point.getY());
+			SendObject(obcm);
+			
+			obcm.setCode("103");
+			obcm.setImg(user.getImg());
+			SendObject(obcm);
+			
 
 			//네트워크 스레드 [받는 기능]
 			ListenNetwork net = new ListenNetwork();
@@ -201,8 +211,23 @@ public class MapleStoryView extends JFrame {
 		{
 			super.paintComponent(g);
 			g.drawImage(backgroundImage,0,0,width,height,this);
+			
+			//유저 벡터 이미지 drawImage
+			
+			//벡터 함수
+			//drawUser()
 			g.drawImage(idleImage,x,y,46,74,this);
 			
+		}
+		
+		private void drawUser() {
+			Iterator
+			for(int i = 0; i < user; i++)
+			{
+				
+				//이미지나 x와 y 하나라도 안왔으면 
+				
+			}
 		}
 		
 		//키 이벤트
@@ -274,12 +299,12 @@ public class MapleStoryView extends JFrame {
 	
 	
 
-	// Server Message를 수신해서 화면에 표시 [읽기]
+	// Server Message를 수신해서 화면에 표시 [받기]
 	class ListenNetwork extends Thread {
 		public void run() {
 			while (true) {
 				try {
-					
+					User user;
 					Object obcm = null;
 					String msg = null;
 					MapleStoryMsg cm;
@@ -302,6 +327,23 @@ public class MapleStoryView extends JFrame {
 					switch (cm.getCode()) {
 					//로그인
 					case "100":
+						//닉네임
+						users.put(cm.getName(), new User( cm.getData() ));
+						break;
+					case "101":
+						//x
+						user = users.get(cm.getName());
+						user.setX(cm.getCode());
+						break;
+					case "102":
+						//y
+						user = users.get(cm.getName());
+						user.setY(cm.getCode());
+						break;
+					case "103":
+						//이미지
+						user = users.get(cm.getName());
+						user.setImg(cm.getImg());
 						break;
 					}
 					
@@ -417,11 +459,10 @@ public class MapleStoryView extends JFrame {
 		// System.exit(0);
 		// 이상 세 라인으로 이루어진다.
 		//
-		MyWindowAdapter(){
-		}
+		MyWindowAdapter() {}
 		public void windowClosing(WindowEvent e) {
 			Window wnd = e.getWindow();
-
+			
 			//온전하게 로그아웃 됐다고 표시
 			MapleStoryMsg obcm = new MapleStoryMsg("400");
 			SendObject(obcm);

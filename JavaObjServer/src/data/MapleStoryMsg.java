@@ -10,11 +10,16 @@ public class MapleStoryMsg implements Serializable {
 	
 	private String data;
 	private ImageIcon img;
-	private User user;
 	//코드와 짜잘한 x,y와 같은 사소한 data값을 넣고 프로토콜로 분류한다
-	
+
 	//100
-	//프로토콜 캐릭터_정보
+	//프로토콜 유저이름
+	//101
+	//유저이름 프로토콜 x
+	//102
+	//유저이름 프로토콜 y
+	//103
+	//유저이름 프로토콜 Idle이미지
 
 	public MapleStoryMsg(String code) {
 		this.code = code;
@@ -51,6 +56,9 @@ public class MapleStoryMsg implements Serializable {
 	public void setData(String data) {
 		this.data = data;
 	}
+	public void setData(int data) {
+		this.data = Integer.toString(data);
+	}
 
 	/////////////////////////////////////
 	//이미지
@@ -62,13 +70,4 @@ public class MapleStoryMsg implements Serializable {
 		this.img = img;
 	}
 
-	/////////////////////////////////////
-	//character
-	public void setUser(User user) {
-		this.user = user;
-	}
-	
-	public User getUser() {
-		return user;
-	}
 }

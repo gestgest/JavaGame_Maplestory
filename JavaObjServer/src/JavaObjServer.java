@@ -133,6 +133,7 @@ public class JavaObjServer extends JFrame {
 					AppendText("새로운 참가자 from " + client_socket);
 					// User 당 하나씩 Thread 생성
 					UserService new_user = new UserService(client_socket);
+					
 					UserVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
 					AppendText("현재 참가자 수 " + UserVec.size());
@@ -180,8 +181,8 @@ public class JavaObjServer extends JFrame {
 				
 				try {
 					
-				if(System.currentTimeMillis()-pretime < delay)
-					Thread.sleep(delay - System.currentTimeMillis()+pretime);
+					if(System.currentTimeMillis()-pretime < delay)
+						Thread.sleep(delay - System.currentTimeMillis()+pretime);
 				
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -274,14 +275,20 @@ public class JavaObjServer extends JFrame {
 					
 					
 					//login
-					if (cm.getCode().matches("100")) 
-					{
+					switch(cm.getCode()) {
+					case "100":
 						user = new User(cm.getName());
-						//만약 유저가 처음이면 user.Init();
-						
 						Login();
+						break;
+					case "101":
+					case "102":
+						AppendText(cm.getData());
+					case "103":
+						WriteAllObject(cm);
+						break;
 					}
-					else if (cm.getCode().matches("200")) {
+					
+					if (cm.getCode().matches("200")) {
 					} else if (cm.getCode().matches("300")) {
 						WriteAllObject(cm);
 					} else if (cm.getCode().matches("400")) { // logout message 처리 로그아웃
@@ -310,11 +317,11 @@ public class JavaObjServer extends JFrame {
 		public void Login() {
 			AppendText("새로운 참가자 " + user.getName() + " 입장.");
 			
-			
-			
+			//만약 유저가 처음이면 user.Init();
 			//100 User
 			MapleStoryMsg msg = new MapleStoryMsg("100");
-			msg.setUser(user);
+			msg.setName(user.getName());
+			
 			//정보 넣기
 			WriteAllObject(msg);
 		}
@@ -333,12 +340,14 @@ public class JavaObjServer extends JFrame {
 				UserService user = (UserService) user_vc.elementAt(i);
 			}
 		}
+		
 		// 모든 User들에게 Object를 방송. 채팅 message와 image object를 보낼 수 있다
 		public void WriteAllObject(Object ob) {
+			
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
 				AppendText(i + " ");
-				//user.WriteOneObject(ob);
+				user.WriteOneObject(ob);
 			}
 		}
 

@@ -4,7 +4,7 @@ import javax.swing.ImageIcon;
 
 public class User {
 	private String name;
-	private Point point;
+	public Point point;
 	//여러개의 이미지
 	private ImageIcon image; 
 	
@@ -24,9 +24,11 @@ public class User {
 	public User(User user)
 	{
 		this.name = user.name;
-		this.point = new Point(user.getPoint());
+		this.point = new Point(user.point.x, user.point.y);
 		this.image = user.image;
 	}
+	
+	
 	
 	//직업
 	
@@ -35,22 +37,25 @@ public class User {
 	//경험치
 	//공격력
 	//
-
+	
+	
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 
-	public Point getPoint() {
-		return point;
-	}
-	public void setPoint(Point point) {
-		this.point = point;
+	public ImageIcon getImg() {
+		return image;
 	}
 	
-	private class Point {
+	public void setImg(ImageIcon image) {
+		this.image = image;
+	}
+	
+	public class Point {
 		private int x,y;
 		public Point(int x, int y)
 		{
