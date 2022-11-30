@@ -55,7 +55,7 @@ public class JavaObjServer extends JFrame {
 	/////////////////////
 	//자작변수
 	long pretime;
-	int delay = 150; //56프레임
+	int delay = 100; //56프레임
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -411,7 +411,6 @@ public class JavaObjServer extends JFrame {
 			
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				AppendText(i+ "번 사람에게 보내기");
 				user.WriteOneObject(ob);
 			}
 		}
