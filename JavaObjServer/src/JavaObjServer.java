@@ -155,9 +155,11 @@ public class JavaObjServer extends JFrame {
 
 	public void AppendObject(MapleStoryMsg msg) {
 		// textArea.append("사용자로부터 들어온 object : " + str+"\n");
+		textArea.append("\n");
 		textArea.append("code = " + msg.getCode() + "\n");
 		textArea.append("id = " + msg.getName() + "\n");
-		textArea.append("data = " + msg.getData() + "\n");
+		//textArea.append("data = " + msg.getData() + "\n");
+		textArea.append("\n");
 		textArea.setCaretPosition(textArea.getText().length());
 	}
 
@@ -278,13 +280,16 @@ public class JavaObjServer extends JFrame {
 					switch(cm.getCode()) {
 					case "100":
 						user = new User(cm.getName());
+						user.setX(cm.getX());
+						user.setY(cm.getY());
+						user.setImg(cm.getImg());
 						Login();
 						break;
 					case "101":
 					case "102":
-						AppendText("데이터 : "+cm.getData());
+						//AppendText("데이터 : "+cm.getY());
 					case "103":
-						WriteAllObject(cm);
+						//WriteAllObject(cm);
 						break;
 					}
 					
@@ -321,6 +326,9 @@ public class JavaObjServer extends JFrame {
 			//100 User
 			MapleStoryMsg msg = new MapleStoryMsg("100");
 			msg.setName(user.getName());
+			msg.setX(user.getX());
+			msg.setY(user.getY());
+			msg.setImg(user.getImg());
 			
 			//정보 넣기
 			WriteAllObject(msg);
@@ -346,7 +354,7 @@ public class JavaObjServer extends JFrame {
 			
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				AppendText("보내기 :"+i);
+				AppendText(i+ "번 사람에게 보내기");
 				user.WriteOneObject(ob);
 			}
 		}

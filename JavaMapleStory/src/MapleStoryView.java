@@ -130,12 +130,13 @@ public class MapleStoryView extends JFrame {
 		screenWidth = dim.getWidth();	
 		screenHeight = dim.getHeight();
 		
-		if(screenHeight < 900) {
+		//화면 맞추기 빡세서 포기
+		//if(screenHeight < 900) {
 			width = 800; height = 600;
-		}
-		else {
-			width = 1200; height = 900;
-		}
+		//}
+		//else {
+			//width = 1200; height = 900;
+		//}
 
 		int screenX = (int) ((screenWidth - width) / 2);
 		int screenY = (int) ((screenHeight - height) / 2);
@@ -147,8 +148,8 @@ public class MapleStoryView extends JFrame {
 		setContentPane(contentPane);
 		
 		setVisible(true);
-		DebugTime debugTime = new DebugTime();
-		//debugTime.start();
+		FrameThread frameThread = new FrameThread();
+		frameThread.start();
 		
 		//닉네임 설정
 		user = new User(username,x,y,idleIcon);
@@ -165,26 +166,11 @@ public class MapleStoryView extends JFrame {
 			//로그인 메세지 보내는 기능
 			MapleStoryMsg obcm = new MapleStoryMsg("100");
 			obcm.setName(user.getName());
-			obcm.setData(user.getName());
-			SendObject(obcm);
-
-			MapleStoryMsg obcm1 = new MapleStoryMsg("101");
-			obcm.setCode("101");
-			obcm.setName(user.getName());
-			obcm.setData(user.getX());
-			SendObject(obcm1);
-			
-			/*
-			
-			obcm.setCode("102");
-			obcm.setData(user.getY());
-			SendObject(obcm);
-			
-			obcm.setCode("103");
+			obcm.setX(user.getX());
+			obcm.setY(user.getY());
 			obcm.setImg(user.getImg());
+
 			SendObject(obcm);
-			*/
-			
 
 			//네트워크 스레드 [받는 기능]
 			ListenNetwork net = new ListenNetwork();
@@ -220,9 +206,7 @@ public class MapleStoryView extends JFrame {
 			g.drawImage(backgroundImage,0,0,width,height,this);
 			
 			//유저 벡터 이미지 drawImage
-			
-			//벡터 함수
-			//drawUser(g);
+			drawUser(g);
 			//g.drawImage(idleImage,x,y,46,74,this);
 			
 		}
@@ -234,7 +218,6 @@ public class MapleStoryView extends JFrame {
 				String key = keys.next();
 				 
 				User user = users.get(key);
-				//이미지나 x와 y 하나라도 안왔으면?★
 				
 				g.drawImage(user.getImg().getImage(),user.getX(), user.getY(),46,74,this);
 			}
@@ -314,7 +297,7 @@ public class MapleStoryView extends JFrame {
 		public void run() {
 			while (true) {
 				try {
-					User user;
+					User user = null;
 					Object obcm = null;
 					String msg = null;
 					MapleStoryMsg cm;
@@ -339,20 +322,27 @@ public class MapleStoryView extends JFrame {
 					case "100":
 						//닉네임
 						users.put(cm.getName(), new User( cm.getData() ));
+						user = users.get(cm.getName());
+						user.setX(cm.getX());
+						user.setY(cm.getY());
+						user.setImg(cm.getImg());
 						System.out.println("100받음");
 						break;
 					case "101":
 						//x
+						System.out.println("101받음");
 						user = users.get(cm.getName());
 						user.setX(cm.getCode());
 						break;
 					case "102":
 						//y
+						System.out.println("102받음");
 						user = users.get(cm.getName());
 						user.setY(cm.getCode());
 						break;
 					case "103":
 						//이미지
+						System.out.println("103받음");
 						user = users.get(cm.getName());
 						user.setImg(cm.getImg());
 						break;
@@ -435,8 +425,8 @@ public class MapleStoryView extends JFrame {
 		}
 	}
 
-	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? ]
-	class DebugTime extends Thread{
+	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? = 애니메이션 구현]
+	class FrameThread extends Thread{
 		@Override
 		public void run(){
 			try
