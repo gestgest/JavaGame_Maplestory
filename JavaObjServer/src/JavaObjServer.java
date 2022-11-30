@@ -255,7 +255,7 @@ public class JavaObjServer extends JFrame {
 
 					
 					try {
-						//왜 못읽냐
+						//100 / 101을 보냈는데 100 / 100이 나옴
 						obcm = ois.readObject();
 					} catch (ClassNotFoundException e) {
 						// TODO Auto-generated catch block
@@ -282,7 +282,7 @@ public class JavaObjServer extends JFrame {
 						break;
 					case "101":
 					case "102":
-						AppendText(cm.getData());
+						AppendText("데이터 : "+cm.getData());
 					case "103":
 						WriteAllObject(cm);
 						break;
@@ -346,7 +346,7 @@ public class JavaObjServer extends JFrame {
 			
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				AppendText(i + " ");
+				AppendText("보내기 :"+i);
 				user.WriteOneObject(ob);
 			}
 		}

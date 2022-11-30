@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.JFrame;
@@ -164,19 +165,25 @@ public class MapleStoryView extends JFrame {
 			//로그인 메세지 보내는 기능
 			MapleStoryMsg obcm = new MapleStoryMsg("100");
 			obcm.setName(user.getName());
+			obcm.setData(user.getName());
 			SendObject(obcm);
-			
+
+			MapleStoryMsg obcm1 = new MapleStoryMsg("101");
 			obcm.setCode("101");
-			obcm.setData(user.point.getX());
-			SendObject(obcm);
+			obcm.setName(user.getName());
+			obcm.setData(user.getX());
+			SendObject(obcm1);
+			
+			/*
 			
 			obcm.setCode("102");
-			obcm.setData(user.point.getY());
+			obcm.setData(user.getY());
 			SendObject(obcm);
 			
 			obcm.setCode("103");
 			obcm.setImg(user.getImg());
 			SendObject(obcm);
+			*/
 			
 
 			//네트워크 스레드 [받는 기능]
@@ -215,18 +222,21 @@ public class MapleStoryView extends JFrame {
 			//유저 벡터 이미지 drawImage
 			
 			//벡터 함수
-			//drawUser()
-			g.drawImage(idleImage,x,y,46,74,this);
+			//drawUser(g);
+			//g.drawImage(idleImage,x,y,46,74,this);
 			
 		}
 		
-		private void drawUser() {
-			Iterator
-			for(int i = 0; i < user; i++)
+		private void drawUser(Graphics g) {
+			Iterator<String> keys = users.keySet().iterator();
+			while(keys.hasNext())
 			{
+				String key = keys.next();
+				 
+				User user = users.get(key);
+				//이미지나 x와 y 하나라도 안왔으면?★
 				
-				//이미지나 x와 y 하나라도 안왔으면 
-				
+				g.drawImage(user.getImg().getImage(),user.getX(), user.getY(),46,74,this);
 			}
 		}
 		
@@ -329,6 +339,7 @@ public class MapleStoryView extends JFrame {
 					case "100":
 						//닉네임
 						users.put(cm.getName(), new User( cm.getData() ));
+						System.out.println("100받음");
 						break;
 					case "101":
 						//x
