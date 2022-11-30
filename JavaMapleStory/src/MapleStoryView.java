@@ -148,8 +148,6 @@ public class MapleStoryView extends JFrame {
 		setContentPane(contentPane);
 		
 		setVisible(true);
-		FrameThread frameThread = new FrameThread();
-		frameThread.start();
 		
 		//닉네임 설정
 		user = new User(username,x,y,idleIcon);
@@ -164,24 +162,32 @@ public class MapleStoryView extends JFrame {
 
 			
 			//로그인 메세지 보내는 기능
-			MapleStoryMsg obcm = new MapleStoryMsg("100");
-			obcm.setName(user.getName());
-			obcm.setX(user.getX());
-			obcm.setY(user.getY());
-			obcm.setImg(user.getImg());
-
-			SendObject(obcm);
+			init_user();
 
 			//네트워크 스레드 [받는 기능]
 			ListenNetwork net = new ListenNetwork();
 			net.start();
 
 			
-
+			FrameThread frameThread = new FrameThread();
+			frameThread.start();
 		} catch (NumberFormatException | IOException e) {
 			//TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	//초기 설정
+	private void init_user()
+	{
+		MapleStoryMsg obcm = new MapleStoryMsg("100");
+		obcm.setName(user.getName());
+		obcm.setX(user.getX());
+		obcm.setY(user.getY());
+		obcm.setImg(user.getImg());
+		obcm.setKeybuff(0);
+		
+		SendObject(obcm);
 	}
 	
 	//메인 메인 판넬
@@ -332,13 +338,13 @@ public class MapleStoryView extends JFrame {
 						//x
 						System.out.println("101받음");
 						user = users.get(cm.getName());
-						user.setX(cm.getCode());
+						user.setX(cm.getX());
 						break;
 					case "102":
 						//y
 						System.out.println("102받음");
 						user = users.get(cm.getName());
-						user.setY(cm.getCode());
+						user.setY(cm.getY());
 						break;
 					case "103":
 						//이미지
@@ -436,7 +442,7 @@ public class MapleStoryView extends JFrame {
 
 					contentPane.repaint();//화면 리페인트
 					//process();//각종 충돌 처리
-					//keyprocess();//키 처리
+					keyprossed();//키 처리
 
 					//프레임 유지
 					if(System.currentTimeMillis()-pretime < delay) 
@@ -449,6 +455,14 @@ public class MapleStoryView extends JFrame {
 			{
 				e.printStackTrace();
 			}
+		}
+		
+		//키 입력 받았던거 보내는 역할
+		private void keyprossed()
+		{
+			MapleStoryMsg obcm = new MapleStoryMsg("104");
+			obcm.setKeybuff(keybuff);
+			SendObject(obcm);
 		}
 	}
 	

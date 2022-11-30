@@ -6,7 +6,9 @@ public class User {
 	private String name;
 	private int x,y;
 	//여러개의 이미지
-	private ImageIcon image; 
+	private ImageIcon image;
+	private int keybuff;
+	
 	
 	//없앨 내용 [로그인을 처음 했다면]
 	public User(String name, int x, int y, ImageIcon image)
@@ -39,6 +41,9 @@ public class User {
 	public void setX(String x) { this.x = Integer.parseInt(x); }
 	public void setY(String y) { this.y = Integer.parseInt(y); }
 
+	public int getKeybuff() { return keybuff; }
+	public void setKeybuff(int keybuff) { this.keybuff = keybuff; }
+	
 
 	public ImageIcon getImg() {
 		return image;

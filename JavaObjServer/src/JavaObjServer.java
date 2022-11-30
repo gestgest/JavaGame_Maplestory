@@ -41,15 +41,21 @@ public class JavaObjServer extends JFrame {
 
 	private ServerSocket socket; // 서버소켓
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
-	private Vector UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
+	private Vector<UserService> UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 
+	//단축키
+	final int LEFT_PRESSED	=0x001;
+	final int RIGHT_PRESSED	=0x002;
 	/**
 	 * Launch the application.
 	 */
+	//////////////////////////////////////////////////////////
 	
+	/////////////////////
+	//자작변수
 	long pretime;
-	int delay = 17; //56프레임
+	int delay = 150; //56프레임
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -110,6 +116,9 @@ public class JavaObjServer extends JFrame {
 				txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
 				AcceptServer accept_server = new AcceptServer();
 				accept_server.start();
+				
+				TimeThread timeThread = new TimeThread();
+				timeThread.start();
 			}
 		});
 		btnServerStart.setBounds(12, 356, 300, 35);
@@ -178,8 +187,10 @@ public class JavaObjServer extends JFrame {
 				//서버 관리
 				pretime=System.currentTimeMillis();
 				
-				//메세지 뿌리기
-				
+				//메세지 뿌리기 [key 버퍼가 1인경우 2인경우]
+				moveUser();
+
+				//AppendText("삐약");
 				
 				try {
 					
@@ -189,7 +200,42 @@ public class JavaObjServer extends JFrame {
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					AppendText("시간 오류");
 				}
+			}
+		}
+		
+		//이동함수
+		public void moveUser()
+		{
+			int x;
+			for(int i = 0; i < UserVec.size(); i++)
+			{
+				UserService us = UserVec.get(i);
+				User u = us.getUser();
+				MapleStoryMsg msg;
+				switch(u.getKeybuff()) {
+				case LEFT_PRESSED:
+					x = u.getX()- 2;
+					u.setX(x);
+					msg = new MapleStoryMsg("101");
+					msg.setX(x);
+					msg.setName(u.getName());
+
+					us.WriteAllObject(msg);
+					break;
+					
+				case RIGHT_PRESSED:
+					x = u.getX()+ 2;
+					u.setX(x);
+					msg = new MapleStoryMsg("101");
+					msg.setX(x);
+					msg.setName(u.getName());
+
+					us.WriteAllObject(msg);
+					break;
+				}
+				
 			}
 		}
 	}
@@ -271,11 +317,11 @@ public class JavaObjServer extends JFrame {
 					
 					if (obcm instanceof MapleStoryMsg) {
 						cm = (MapleStoryMsg) obcm;
-						AppendObject(cm);
+						//AppendObject(cm);
 					} else
 						continue;
 					
-					
+					//받기
 					//login
 					switch(cm.getCode()) {
 					case "100":
@@ -283,12 +329,23 @@ public class JavaObjServer extends JFrame {
 						user.setX(cm.getX());
 						user.setY(cm.getY());
 						user.setImg(cm.getImg());
+						user.setKeybuff(cm.getKeybuff());
 						Login();
 						break;
 					case "101":
 					case "102":
 						//AppendText("데이터 : "+cm.getY());
 					case "103":
+						//WriteAllObject(cm);
+						break;
+					case "104":
+						//이동 처리 함수
+						user.setKeybuff(cm.getKeybuff());
+						
+						//WriteAllObject(cm);
+						break;
+					case "110":
+						//이동 처리 함수
 						//WriteAllObject(cm);
 						break;
 					}
@@ -453,6 +510,15 @@ public class JavaObjServer extends JFrame {
 				Logout();
 			}
 		}
+		
+		public User getUser() { return user; }
+		
+		//자작 함수들
+		public void moveUser() {
+			AppendText("키버퍼 : " + user.getKeybuff());
+			//AppendText("키버퍼 : " );
+		}
+		
 	}
 
 }
