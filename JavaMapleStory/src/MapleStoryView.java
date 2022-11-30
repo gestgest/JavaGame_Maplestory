@@ -19,6 +19,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -88,7 +91,7 @@ public class MapleStoryView extends JFrame {
 	private Image backgroundImage = backgroundIcon.getImage();
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
-	   //디버그
+   //디버그
 	private Image idleImage = idleIcon.getImage();
 	
 	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
@@ -101,10 +104,9 @@ public class MapleStoryView extends JFrame {
 	final int RIGHT_PRESSED	=0x002;
 	
 	
-	
-	
 	//나중에 캐릭터 클래스 만들거임
 	private User user;
+	private HashMap<String, User> users = new HashMap<String, User>(3);
 	private int x = 0,y = 0;
 
 	// 현재시간
@@ -128,12 +130,13 @@ public class MapleStoryView extends JFrame {
 		screenWidth = dim.getWidth();	
 		screenHeight = dim.getHeight();
 		
-		if(screenHeight < 900) {
+		//화면 맞추기 빡세서 포기
+		//if(screenHeight < 900) {
 			width = 800; height = 600;
-		}
-		else {
-			width = 1200; height = 900;
-		}
+		//}
+		//else {
+			//width = 1200; height = 900;
+		//}
 
 		int screenX = (int) ((screenWidth - width) / 2);
 		int screenY = (int) ((screenHeight - height) / 2);
@@ -145,8 +148,6 @@ public class MapleStoryView extends JFrame {
 		setContentPane(contentPane);
 		
 		setVisible(true);
-		DebugTime debugTime = new DebugTime();
-		//debugTime.start();
 		
 		//닉네임 설정
 		user = new User(username,x,y,idleIcon);
@@ -161,24 +162,32 @@ public class MapleStoryView extends JFrame {
 
 			
 			//로그인 메세지 보내는 기능
-			MapleStoryMsg obcm = new MapleStoryMsg("100");
-			obcm.setName(user.getName());
-			
-			
-			
-			//보내는데 오류
-			SendObject(obcm);
+			init_user();
 
 			//네트워크 스레드 [받는 기능]
 			ListenNetwork net = new ListenNetwork();
 			net.start();
 
 			
-
+			FrameThread frameThread = new FrameThread();
+			frameThread.start();
 		} catch (NumberFormatException | IOException e) {
 			//TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	//초기 설정
+	private void init_user()
+	{
+		MapleStoryMsg obcm = new MapleStoryMsg("100");
+		obcm.setName(user.getName());
+		obcm.setX(user.getX());
+		obcm.setY(user.getY());
+		obcm.setImg(user.getImg());
+		obcm.setKeybuff(0);
+		
+		SendObject(obcm);
 	}
 	
 	//메인 메인 판넬
@@ -201,8 +210,23 @@ public class MapleStoryView extends JFrame {
 		{
 			super.paintComponent(g);
 			g.drawImage(backgroundImage,0,0,width,height,this);
-			g.drawImage(idleImage,x,y,46,74,this);
 			
+			//유저 벡터 이미지 drawImage
+			drawUser(g);
+			//g.drawImage(idleImage,x,y,46,74,this);
+			
+		}
+		
+		private void drawUser(Graphics g) {
+			Iterator<String> keys = users.keySet().iterator();
+			while(keys.hasNext())
+			{
+				String key = keys.next();
+				 
+				User user = users.get(key);
+				
+				g.drawImage(user.getImg().getImage(),user.getX(), user.getY(),46,74,this);
+			}
 		}
 		
 		//키 이벤트
@@ -274,12 +298,12 @@ public class MapleStoryView extends JFrame {
 	
 	
 
-	// Server Message를 수신해서 화면에 표시 [읽기]
+	// Server Message를 수신해서 화면에 표시 [받기]
 	class ListenNetwork extends Thread {
 		public void run() {
 			while (true) {
 				try {
-					
+					User user = null;
 					Object obcm = null;
 					String msg = null;
 					MapleStoryMsg cm;
@@ -302,6 +326,31 @@ public class MapleStoryView extends JFrame {
 					switch (cm.getCode()) {
 					//로그인
 					case "100":
+						//닉네임
+						users.put(cm.getName(), new User( cm.getData() ));
+						user = users.get(cm.getName());
+						user.setX(cm.getX());
+						user.setY(cm.getY());
+						user.setImg(cm.getImg());
+						System.out.println("100받음");
+						break;
+					case "101":
+						//x
+						System.out.println("101받음");
+						user = users.get(cm.getName());
+						user.setX(cm.getX());
+						break;
+					case "102":
+						//y
+						System.out.println("102받음");
+						user = users.get(cm.getName());
+						user.setY(cm.getY());
+						break;
+					case "103":
+						//이미지
+						System.out.println("103받음");
+						user = users.get(cm.getName());
+						user.setImg(cm.getImg());
 						break;
 					}
 					
@@ -382,8 +431,8 @@ public class MapleStoryView extends JFrame {
 		}
 	}
 
-	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? ]
-	class DebugTime extends Thread{
+	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? = 애니메이션 구현]
+	class FrameThread extends Thread{
 		@Override
 		public void run(){
 			try
@@ -393,7 +442,7 @@ public class MapleStoryView extends JFrame {
 
 					contentPane.repaint();//화면 리페인트
 					//process();//각종 충돌 처리
-					//keyprocess();//키 처리
+					keyprossed();//키 처리
 
 					//프레임 유지
 					if(System.currentTimeMillis()-pretime < delay) 
@@ -407,6 +456,14 @@ public class MapleStoryView extends JFrame {
 				e.printStackTrace();
 			}
 		}
+		
+		//키 입력 받았던거 보내는 역할
+		private void keyprossed()
+		{
+			MapleStoryMsg obcm = new MapleStoryMsg("104");
+			obcm.setKeybuff(keybuff);
+			SendObject(obcm);
+		}
 	}
 	
 	class MyWindowAdapter extends WindowAdapter
@@ -417,11 +474,10 @@ public class MapleStoryView extends JFrame {
 		// System.exit(0);
 		// 이상 세 라인으로 이루어진다.
 		//
-		MyWindowAdapter(){
-		}
+		MyWindowAdapter() {}
 		public void windowClosing(WindowEvent e) {
 			Window wnd = e.getWindow();
-
+			
 			//온전하게 로그아웃 됐다고 표시
 			MapleStoryMsg obcm = new MapleStoryMsg("400");
 			SendObject(obcm);

@@ -41,15 +41,21 @@ public class JavaObjServer extends JFrame {
 
 	private ServerSocket socket; // 서버소켓
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
-	private Vector UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
+	private Vector<UserService> UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 
+	//단축키
+	final int LEFT_PRESSED	=0x001;
+	final int RIGHT_PRESSED	=0x002;
 	/**
 	 * Launch the application.
 	 */
+	//////////////////////////////////////////////////////////
 	
+	/////////////////////
+	//자작변수
 	long pretime;
-	int delay = 17; //56프레임
+	int delay = 100; //56프레임
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -110,6 +116,9 @@ public class JavaObjServer extends JFrame {
 				txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
 				AcceptServer accept_server = new AcceptServer();
 				accept_server.start();
+				
+				TimeThread timeThread = new TimeThread();
+				timeThread.start();
 			}
 		});
 		btnServerStart.setBounds(12, 356, 300, 35);
@@ -133,6 +142,7 @@ public class JavaObjServer extends JFrame {
 					AppendText("새로운 참가자 from " + client_socket);
 					// User 당 하나씩 Thread 생성
 					UserService new_user = new UserService(client_socket);
+					
 					UserVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
 					AppendText("현재 참가자 수 " + UserVec.size());
@@ -154,9 +164,11 @@ public class JavaObjServer extends JFrame {
 
 	public void AppendObject(MapleStoryMsg msg) {
 		// textArea.append("사용자로부터 들어온 object : " + str+"\n");
+		textArea.append("\n");
 		textArea.append("code = " + msg.getCode() + "\n");
 		textArea.append("id = " + msg.getName() + "\n");
-		textArea.append("data = " + msg.getData() + "\n");
+		//textArea.append("data = " + msg.getData() + "\n");
+		textArea.append("\n");
 		textArea.setCaretPosition(textArea.getText().length());
 	}
 
@@ -175,18 +187,55 @@ public class JavaObjServer extends JFrame {
 				//서버 관리
 				pretime=System.currentTimeMillis();
 				
-				//메세지 뿌리기
-				
+				//메세지 뿌리기 [key 버퍼가 1인경우 2인경우]
+				moveUser();
+
+				//AppendText("삐약");
 				
 				try {
 					
-				if(System.currentTimeMillis()-pretime < delay)
-					Thread.sleep(delay - System.currentTimeMillis()+pretime);
+					if(System.currentTimeMillis()-pretime < delay)
+						Thread.sleep(delay - System.currentTimeMillis()+pretime);
 				
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					AppendText("시간 오류");
 				}
+			}
+		}
+		
+		//이동함수
+		public void moveUser()
+		{
+			int x;
+			for(int i = 0; i < UserVec.size(); i++)
+			{
+				UserService us = UserVec.get(i);
+				User u = us.getUser();
+				MapleStoryMsg msg;
+				switch(u.getKeybuff()) {
+				case LEFT_PRESSED:
+					x = u.getX()- 2;
+					u.setX(x);
+					msg = new MapleStoryMsg("101");
+					msg.setX(x);
+					msg.setName(u.getName());
+
+					us.WriteAllObject(msg);
+					break;
+					
+				case RIGHT_PRESSED:
+					x = u.getX()+ 2;
+					u.setX(x);
+					msg = new MapleStoryMsg("101");
+					msg.setX(x);
+					msg.setName(u.getName());
+
+					us.WriteAllObject(msg);
+					break;
+				}
+				
 			}
 		}
 	}
@@ -254,7 +303,7 @@ public class JavaObjServer extends JFrame {
 
 					
 					try {
-						//왜 못읽냐
+						//100 / 101을 보냈는데 100 / 100이 나옴
 						obcm = ois.readObject();
 					} catch (ClassNotFoundException e) {
 						// TODO Auto-generated catch block
@@ -268,20 +317,40 @@ public class JavaObjServer extends JFrame {
 					
 					if (obcm instanceof MapleStoryMsg) {
 						cm = (MapleStoryMsg) obcm;
-						AppendObject(cm);
+						//AppendObject(cm);
 					} else
 						continue;
 					
-					
+					//받기
 					//login
-					if (cm.getCode().matches("100")) 
-					{
+					switch(cm.getCode()) {
+					case "100":
 						user = new User(cm.getName());
-						//만약 유저가 처음이면 user.Init();
-						
+						user.setX(cm.getX());
+						user.setY(cm.getY());
+						user.setImg(cm.getImg());
+						user.setKeybuff(cm.getKeybuff());
 						Login();
+						break;
+					case "101":
+					case "102":
+						//AppendText("데이터 : "+cm.getY());
+					case "103":
+						//WriteAllObject(cm);
+						break;
+					case "104":
+						//이동 처리 함수
+						user.setKeybuff(cm.getKeybuff());
+						
+						//WriteAllObject(cm);
+						break;
+					case "110":
+						//이동 처리 함수
+						//WriteAllObject(cm);
+						break;
 					}
-					else if (cm.getCode().matches("200")) {
+					
+					if (cm.getCode().matches("200")) {
 					} else if (cm.getCode().matches("300")) {
 						WriteAllObject(cm);
 					} else if (cm.getCode().matches("400")) { // logout message 처리 로그아웃
@@ -310,11 +379,14 @@ public class JavaObjServer extends JFrame {
 		public void Login() {
 			AppendText("새로운 참가자 " + user.getName() + " 입장.");
 			
-			
-			
+			//만약 유저가 처음이면 user.Init();
 			//100 User
 			MapleStoryMsg msg = new MapleStoryMsg("100");
-			msg.setUser(user);
+			msg.setName(user.getName());
+			msg.setX(user.getX());
+			msg.setY(user.getY());
+			msg.setImg(user.getImg());
+			
 			//정보 넣기
 			WriteAllObject(msg);
 		}
@@ -333,12 +405,13 @@ public class JavaObjServer extends JFrame {
 				UserService user = (UserService) user_vc.elementAt(i);
 			}
 		}
+		
 		// 모든 User들에게 Object를 방송. 채팅 message와 image object를 보낼 수 있다
 		public void WriteAllObject(Object ob) {
+			
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				AppendText(i + " ");
-				//user.WriteOneObject(ob);
+				user.WriteOneObject(ob);
 			}
 		}
 
@@ -436,6 +509,15 @@ public class JavaObjServer extends JFrame {
 				Logout();
 			}
 		}
+		
+		public User getUser() { return user; }
+		
+		//자작 함수들
+		public void moveUser() {
+			AppendText("키버퍼 : " + user.getKeybuff());
+			//AppendText("키버퍼 : " );
+		}
+		
 	}
 
 }
