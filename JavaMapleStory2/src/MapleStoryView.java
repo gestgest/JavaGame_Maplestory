@@ -1,5 +1,6 @@
 
 import java.awt.BorderLayout;
+import java.awt.Canvas;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
@@ -76,6 +77,7 @@ public class MapleStoryView extends JFrame {
 	
 	//펜
 	private GamePanel contentPane;
+	GameScreen gameScreen;//Canvas 객체를 상속한 화면 묘화 메인 클래스
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	//이미지 자료
@@ -107,13 +109,12 @@ public class MapleStoryView extends JFrame {
 	//나중에 캐릭터 클래스 만들거임
 	private User user;
 	private HashMap<String, User> users = new HashMap<String, User>(3);
-	private int x = 0,y = 0;
 
 	// 현재시간
 	private long pretime;
 	private final int delay = 17; //17 / 1000초 : 58 (프레임 / 초)
 	
-	int keybuff;//키 버퍼값
+	
 	
 	
 	
@@ -150,44 +151,38 @@ public class MapleStoryView extends JFrame {
 		setVisible(true);
 		
 		//닉네임 설정
-		user = new User(username,x,y,idleIcon);
+		init_user(username);
+		users.put(username, user); //서버땐 뺴야함
 		
-		try {
-			socket = new Socket(ip_addr, Integer.parseInt(port_no));
+		//네트워크 설정 [스레드 뺐음]★
 
-			oos = new ObjectOutputStream(socket.getOutputStream());
-			oos.flush();
-			ois = new ObjectInputStream(socket.getInputStream());
-
-
-			
-			//로그인 메세지 보내는 기능
-			init_user();
-
-			//네트워크 스레드 [받는 기능]
-			ListenNetwork net = new ListenNetwork();
-			net.start();
-
-			
-			FrameThread frameThread = new FrameThread();
-			frameThread.start();
-		} catch (NumberFormatException | IOException e) {
-			//TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		FrameThread frameThread = new FrameThread();
+		frameThread.start();
+	}
+	
+	//유저 
+	private void init_user(String username)
+	{
+		user = new User(username,0,0,idleIcon);
+		user.setDegree(0);
+		user.setKeybuff(0);
+		//init_server_user();
 	}
 	
 	//초기 설정
-	private void init_user()
+	private void init_server_user()
 	{
 		MapleStoryMsg obcm = new MapleStoryMsg("100");
+		
 		obcm.setName(user.getName());
 		obcm.setX(user.getX());
 		obcm.setY(user.getY());
 		obcm.setImg(user.getImg());
 		obcm.setKeybuff(0);
+
+		gameScreen.repaint();//화면 리페인트
 		
-		SendObject(obcm);
+		//SendObject(obcm);
 	}
 	
 	//메인 메인 판넬
@@ -201,18 +196,22 @@ public class MapleStoryView extends JFrame {
 			add(uibar);
 			
 			addKeyListener(new KeyEventEx());
-
+			
+			gameScreen = new GameScreen(this);
+			gameScreen.setBounds(0,0,width,height);
+			add(gameScreen);
+			
 			setFocusable(true);
 			requestFocus();
 		}
 		
+		//그리는 이미지
 		public void paintComponent(Graphics g)
 		{
 			super.paintComponent(g);
-			g.drawImage(backgroundImage,0,0,width,height,this);
 			
 			//유저 벡터 이미지 drawImage
-			drawUser(g);
+			//drawUser(g);
 			//g.drawImage(idleImage,x,y,46,74,this);
 			
 		}
@@ -242,11 +241,11 @@ public class MapleStoryView extends JFrame {
 				
 				//버퍼를 둔 이유는 
 				case KeyEvent.VK_LEFT:
-					keybuff|=LEFT_PRESSED;//멀티키의 누르기 처리
+					user.setKeybuff(user.getKeybuff()|LEFT_PRESSED);//멀티키의 누르기 처리
 					//send?
 					break;
 				case KeyEvent.VK_RIGHT:
-					keybuff|=RIGHT_PRESSED;
+					user.setKeybuff(user.getKeybuff()|RIGHT_PRESSED);//멀티키의 누르기 처리
 					//send?
 					break;
 				case KeyEvent.VK_UP:
@@ -254,7 +253,6 @@ public class MapleStoryView extends JFrame {
 				case KeyEvent.VK_DOWN:
 					break;
 				case KeyEvent.VK_ALT:
-					y -= 30;
 					contentPane.setFocusable(true);
 					contentPane.requestFocus();
 					break;
@@ -263,13 +261,14 @@ public class MapleStoryView extends JFrame {
 			
 			@Override
 			public void keyReleased(KeyEvent e) 
-			{				int keydown = e.getKeyCode();
+			{				
+				int keydown = e.getKeyCode();
 				switch(keydown) {
 				case KeyEvent.VK_LEFT:
-					keybuff&=~LEFT_PRESSED;
+					user.setKeybuff(user.getKeybuff()&(~LEFT_PRESSED));//멀티키의 누르기 처리
 					break;
 				case KeyEvent.VK_RIGHT:
-					keybuff&=~RIGHT_PRESSED;
+					user.setKeybuff(user.getKeybuff()&(~RIGHT_PRESSED));//멀티키의 누르기 처리
 					break;
 				}
 			}
@@ -441,9 +440,9 @@ public class MapleStoryView extends JFrame {
 				while(true){
 					pretime=System.currentTimeMillis();
 
-					contentPane.repaint();//화면 리페인트
-					//process();//각종 충돌 처리
-					keyprossed();//키 처리
+					gameScreen.repaint();//화면 리페인트
+					process();//각종 충돌 처리
+					keypross();//키 처리
 
 					//프레임 유지
 					if(System.currentTimeMillis()-pretime < delay) 
@@ -459,8 +458,21 @@ public class MapleStoryView extends JFrame {
 		}
 		
 		//키 입력 받았던거 보내는 역할
-		private void keyprossed()
+		private void keypross()
 		{
+			switch(user.getKeybuff()) {
+			case 0:
+			case 3:
+				user.setDegree(0);
+				break;
+			case LEFT_PRESSED:
+				user.setDegree(-1);
+				break;
+			case RIGHT_PRESSED:
+				user.setDegree(+1);
+				break;
+			}
+			
 			//이미지
 			
 			//MapleStoryMsg obcm = new MapleStoryMsg("104");
@@ -468,6 +480,76 @@ public class MapleStoryView extends JFrame {
 			//obcm.setName(user.getName());
 			//SendObject(obcm);
 		}
+		
+		private void process() {
+			//나중에 중력 가속도 + 점프 넣을 예정
+			int x = user.getX();
+			x += user.getDegree() * 100;
+			if(x < 0)
+				x = 0;
+			else if(width * 100 - 4600 < x)
+				x = width * 100 - 4600;
+			
+			user.setX(x);
+			
+			
+		}
+	}
+	
+	private class GameScreen extends Canvas{
+		GamePanel myGamePanel;
+		//더블 버퍼용
+		Image dblbuff;//더블버퍼링용 백버퍼
+		Graphics gc;//더블버퍼링용 그래픽 컨텍스트 [오리지널은 g]
+		GameScreen(GamePanel gamePanel)
+		{
+			this.myGamePanel = gamePanel;
+		}
+		public void paint(Graphics g)
+		{
+			//싱글톤마냥 처음에만 생성
+			if(gc==null) 
+			{
+				//이미지 저장
+				dblbuff=createImage(width,height);//더블 버퍼링용 오프스크린 버퍼 생성. 필히 paint 함수 내에서 해 줘야 한다. 그렇지 않으면 null이 반환된다.
+				if(dblbuff==null) System.out.println("오프스크린 버퍼 생성 실패");
+				else gc=dblbuff.getGraphics();//오프스크린 버퍼에 그리기 위한 그래픽 컨텍스트 획득
+				return;
+				//update는 안함
+			}
+			update(g);
+		}
+		
+		@Override
+		public void update(Graphics g){//화면 깜박거림을 줄이기 위해, paint에서 화면을 바로 묘화하지 않고 update 메소드를 호출하게 한다.
+			if(gc==null) return;
+			dblpaint();//오프스크린 버퍼에 그리고
+			g.drawImage(dblbuff,0,0,this);
+
+			//버퍼[오프스크린] => 화면
+		}
+		public void dblpaint(){
+			//실제 그리는 동작은 이 함수에서 모두 행한다.
+			//버퍼에 그리는 기능
+			
+			//배경
+			gc.drawImage(backgroundImage,-100,-100,width + 100,height + 100,this);
+			drawUser();
+		}
+		
+		private void drawUser()
+		{
+			Iterator<String> keys = users.keySet().iterator();
+			while(keys.hasNext())
+			{
+				String key = keys.next();
+				 
+				User user = users.get(key);
+				
+				gc.drawImage(user.getImg().getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+			}
+		}
+		
 	}
 	
 	

@@ -4,10 +4,13 @@ import javax.swing.ImageIcon;
 
 public class User {
 	private String name;
-	private int x,y;
+
+	private int x,y; //실제론 10000, 10000 => 100,100
 	//여러개의 이미지
 	private ImageIcon image;
 	private int keybuff;
+	//왼쪽 / 오른쪽
+	private int degree;
 	
 	
 	//없앨 내용 [로그인을 처음 했다면]
@@ -43,6 +46,8 @@ public class User {
 
 	public int getKeybuff() { return keybuff; }
 	public void setKeybuff(int keybuff) { this.keybuff = keybuff; }
+	public int getDegree() { return degree; }
+	public void setDegree(int degree) { this.degree = degree; }
 	
 
 	public ImageIcon getImg() {
