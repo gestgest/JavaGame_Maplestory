@@ -55,7 +55,7 @@ public class JavaObjServer extends JFrame {
 	/////////////////////
 	//자작변수
 	long pretime;
-	int delay = 100; //56프레임
+	int delay = 300; //56프레임
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -117,8 +117,8 @@ public class JavaObjServer extends JFrame {
 				AcceptServer accept_server = new AcceptServer();
 				accept_server.start();
 				
-				TimeThread timeThread = new TimeThread();
-				timeThread.start();
+				//TimeThread timeThread = new TimeThread();
+				//timeThread.start();
 			}
 		});
 		btnServerStart.setBounds(12, 356, 300, 35);
@@ -164,9 +164,8 @@ public class JavaObjServer extends JFrame {
 
 	public void AppendObject(MapleStoryMsg msg) {
 		// textArea.append("사용자로부터 들어온 object : " + str+"\n");
-		textArea.append("\n");
 		textArea.append("code = " + msg.getCode() + "\n");
-		textArea.append("id = " + msg.getName() + "\n");
+		textArea.append("이름 = " + msg.getName() + "\n");
 		//textArea.append("data = " + msg.getData() + "\n");
 		textArea.append("\n");
 		textArea.setCaretPosition(textArea.getText().length());
@@ -264,7 +263,7 @@ public class JavaObjServer extends JFrame {
 		private ObjectOutputStream oos;
 
 		private Socket client_socket;
-		private Vector user_vc;
+		private Vector<UserService> user_vc;
 		
 		//유저 정보 클래스 하나 넣어야 할듯
 		private User user;
@@ -317,7 +316,7 @@ public class JavaObjServer extends JFrame {
 					
 					if (obcm instanceof MapleStoryMsg) {
 						cm = (MapleStoryMsg) obcm;
-						//AppendObject(cm);
+						AppendObject(cm);
 					} else
 						continue;
 					
@@ -341,7 +340,6 @@ public class JavaObjServer extends JFrame {
 					case "104":
 						//이동 처리 함수
 						user.setKeybuff(cm.getKeybuff());
-						
 						//WriteAllObject(cm);
 						break;
 					case "110":
@@ -387,8 +385,24 @@ public class JavaObjServer extends JFrame {
 			msg.setY(user.getY());
 			msg.setImg(user.getImg());
 			
+			//user_vc.elementAt(ABORT)
+			
 			//정보 넣기
 			WriteAllObject(msg);
+			
+			for(int i = 0; i < user_vc.size(); i++)
+			{
+				if(!user.getName().equals(user_vc.get(i).user.getName()))
+				{
+					AppendText("보내는 정보 이름 : " + user.getName());
+					MapleStoryMsg msg1 = new MapleStoryMsg("100");
+					msg1.setUser(user_vc.get(i).user);
+					WriteOneObject(msg1);
+				}
+					
+			}
+			
+			//
 		}
 
 		public void Logout() {
@@ -514,7 +528,6 @@ public class JavaObjServer extends JFrame {
 		
 		//자작 함수들
 		public void moveUser() {
-			AppendText("키버퍼 : " + user.getKeybuff());
 			//AppendText("키버퍼 : " );
 		}
 		
