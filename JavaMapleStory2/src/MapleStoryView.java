@@ -114,6 +114,7 @@ public class MapleStoryView extends JFrame {
 	private final int delay = 17; //17 / 1000초 : 58 (프레임 / 초)
 	private final int gravity = 20;
 	private final int jumpA = 100; //점프 가속도
+	private final int animationTime = 125;
 	
 	
 	
@@ -171,9 +172,17 @@ public class MapleStoryView extends JFrame {
 	//유저 
 	private void init_user(String username)
 	{
-		userImageIcons = new ImageIcon[2];
-		userImageIcons[0] = new ImageIcon("src/res/img/IdleLeft.png");
-		userImageIcons[1] = new ImageIcon("src/res/img/IdleRight.png");
+		userImageIcons = new ImageIcon[10];
+		userImageIcons[0] = new ImageIcon("src/res/img/character/IdleLeft.png");
+		userImageIcons[1] = new ImageIcon("src/res/img/character/IdleRight.png");
+		userImageIcons[2] = new ImageIcon("src/res/img/character/WalkLeft1.png");
+		userImageIcons[3] = new ImageIcon("src/res/img/character/WalkLeft2.png");
+		userImageIcons[4] = new ImageIcon("src/res/img/character/WalkLeft3.png");
+		userImageIcons[5] = new ImageIcon("src/res/img/character/WalkLeft4.png");
+		userImageIcons[6] = new ImageIcon("src/res/img/character/WalkRight1.png");
+		userImageIcons[7] = new ImageIcon("src/res/img/character/WalkRight2.png");
+		userImageIcons[8] = new ImageIcon("src/res/img/character/WalkRight3.png");
+		userImageIcons[9] = new ImageIcon("src/res/img/character/WalkRight4.png");
 		
 		
 		user = new User(username,0,0,userImageIcons);
@@ -413,31 +422,6 @@ public class MapleStoryView extends JFrame {
 				e.printStackTrace();
 			}
 		}
-		
-		//키 입력 받았던거 보내는 역할
-		private void keypross()
-		{
-			switch(user.getKeybuff()) {
-			case 0:
-			case 3:
-				user.setDegree(0);
-				break;
-			case LEFT_PRESSED:
-				user.setDegree(-1);
-				break;
-			case RIGHT_PRESSED:
-				user.setDegree(+1);
-				break;
-			}
-			
-			//이미지
-			
-			//MapleStoryMsg obcm = new MapleStoryMsg("104");
-			//obcm.setKeybuff(keybuff);
-			//obcm.setName(user.getName());
-			//SendObject(obcm);
-		}
-		
 		private void process() {
 			//나중에 중력 가속도 + 점프 넣을 예정
 			int x = user.getX();
@@ -475,11 +459,45 @@ public class MapleStoryView extends JFrame {
 			//이 밖에도 땅처리
 			
 
+			if(user.getIsWalk())
+			{
+				long mytime = user.getWalkStart();
+				mytime = pretime - mytime;
+				if(animationTime * 4 <= mytime)
+					mytime %= (animationTime * 4);
+
+				user.setWalkTime(mytime);
+			}
 
 			user.setX(x);
 			user.setY(y);
 			user.setVelocity(velocity);
 		}
+		
+		//키 입력 받았던거 보내는 역할
+		private void keypross()
+		{
+			switch(user.getKeybuff()) {
+			case 0:
+			case 3:
+				user.setDegree(0);
+				break;
+			case LEFT_PRESSED:
+				user.setDegree(-1);
+				break;
+			case RIGHT_PRESSED:
+				user.setDegree(+1);
+				break;
+			}
+			
+			//이미지
+			
+			//MapleStoryMsg obcm = new MapleStoryMsg("104");
+			//obcm.setKeybuff(keybuff);
+			//obcm.setName(user.getName());
+			//SendObject(obcm);
+		}
+		
 	}
 	
 	private class GameScreen extends Canvas{
@@ -532,6 +550,9 @@ public class MapleStoryView extends JFrame {
 				 
 				User user = users.get(key);
 
+				int index = (int)user.getWalkTime();
+				index /= animationTime;
+
 				switch(user.getDegree()) {
 				//idle
 				case 0:
@@ -541,10 +562,11 @@ public class MapleStoryView extends JFrame {
 						gc.drawImage(user.getImg(1).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
 					break;
 				case -1:
-					gc.drawImage(user.getImg(0).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					gc.drawImage(user.getImg(index + 2).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
 					break;
 				case 1:
-					gc.drawImage(user.getImg(1).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+
+					gc.drawImage(user.getImg(index + 6).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
 					break;
 				}
 			}
@@ -556,21 +578,34 @@ public class MapleStoryView extends JFrame {
 		@Override
 		public void keyPressed(KeyEvent e)
 		{
-			
+
+			boolean isWalk;
 			int keydown = e.getKeyCode();
 			switch(keydown) {
 			//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
 			//이후 오브젝트를 받으면 그때 repaint를 해야한다
-			
 			//버퍼를 둔 이유는 
 			case KeyEvent.VK_LEFT:
 				user.setKeybuff(user.getKeybuff()|LEFT_PRESSED);//멀티키의 누르기 처리
 				user.setIsLeft(true);
+				isWalk = user.getIsWalk();
+
+				if(!isWalk) {
+					isWalk = true;
+					user.setWalkStart(pretime);
+					user.setIsWalk(isWalk);
+				}
 				//send?
 				break;
 			case KeyEvent.VK_RIGHT:
 				user.setKeybuff(user.getKeybuff()|RIGHT_PRESSED);//멀티키의 누르기 처리
 				user.setIsLeft(false);
+				isWalk = user.getIsWalk();
+				if(!isWalk) {
+					isWalk = true;
+					user.setWalkStart(pretime);
+					user.setIsWalk(isWalk);
+				}
 				//send?
 				break;
 			case KeyEvent.VK_UP:
@@ -601,9 +636,13 @@ public class MapleStoryView extends JFrame {
 			switch(keydown) {
 			case KeyEvent.VK_LEFT:
 				user.setKeybuff(user.getKeybuff()&(~LEFT_PRESSED));//멀티키의 누르기 처리
+				user.setIsWalk(false);
+				user.setWalkTime(0);
 				break;
 			case KeyEvent.VK_RIGHT:
 				user.setKeybuff(user.getKeybuff()&(~RIGHT_PRESSED));//멀티키의 누르기 처리
+				user.setIsWalk(false);
+				user.setWalkTime(0);
 				break;
 			}
 		}
