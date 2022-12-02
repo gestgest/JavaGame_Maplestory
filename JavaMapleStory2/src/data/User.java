@@ -9,11 +9,16 @@ public class User {
 	//여러개의 이미지
 	// 왼쪽0
 	// 오른쪽1
+	// 왼쪽 걷기 2 3 4 5
+	// 오른쪽 걷기 6 7 8 9
 	private ImageIcon image[];
 	private int keybuff;
 	private int degree;
 	private boolean isLeft;
 	private boolean isJump;
+	private boolean isWalk;
+	private long walkStart;
+	private long walkTime;
 	private int velocity;
 	
 	
@@ -24,15 +29,11 @@ public class User {
 		this.x = x;
 		this.y = y;
 
-		this.image = new ImageIcon[2];
-		for(int i = 0; i <2; i++)
+		this.image = new ImageIcon[image.length];
+		for(int i = 0; i < image.length; i++)
 		{
 			this.image[i] = image[i];
 		}
-		//Init함수로 처리하든 해야함 
-		isLeft = true;
-		isJump = true;
-		this.velocity = 0;
 	}
 	public User(String username)
 	{
@@ -48,6 +49,20 @@ public class User {
 		{
 			this.image[i] = user.getImg(i);
 		}
+	}
+	
+	private void init_User()
+	{
+		//Init함수로 처리하든 해야함 
+		this.isLeft = true;
+		this.isJump = true;
+		this.isWalk = false;
+		this.walkStart = 0;
+		this.walkTime = 0;
+		this.velocity = 0;
+		this.keybuff = 0;
+		this.degree = 0;
+		
 	}
 
 	public String getName() {return name; }
@@ -67,17 +82,27 @@ public class User {
 
 	public boolean getIsLeft() { return isLeft; }
 	public void setIsLeft(boolean isLeft) { this.isLeft = isLeft; }
-	
 	public boolean getIsJump() { return isJump; }
 	public void setIsJump(boolean isJump) { this.isJump = isJump; }
-	
+	public boolean getIsWalk() { return isWalk; }
+	public void setIsWalk(boolean isWalk) { this.isWalk = isWalk; }
+
 	public int getVelocity() { return velocity; }
 	public void setVelocity(int velocity) { this.velocity = velocity; }
+
+	public long getWalkStart() { return walkStart; }
+	public void setWalkStart(long walkStart) { this.walkStart = walkStart; }
+	public long getWalkTime() { return walkTime; }
+	public void setWalkTime(long walkTime) { this.walkTime = walkTime; }
 	
 	
 	//index : 0 : leftidle
 	//1 : rightidle
 	public ImageIcon getImg(int index) {
+		if(10 <= index) {
+			System.out.println("10 넘음");
+			return image[0];
+		}
 		return image[index];
 	}
 	
