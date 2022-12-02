@@ -12,7 +12,8 @@ public class MapleStoryMsg implements Serializable {
 	private String data;
 	
 	private int x,y;
-	private ImageIcon img;
+	private ImageIcon imageLeft;
+	private ImageIcon imageRight;
 	//코드와 짜잘한 x,y와 같은 사소한 data값을 넣고 프로토콜로 분류한다
 
 	//100 [로그인]
@@ -81,19 +82,26 @@ public class MapleStoryMsg implements Serializable {
 	public void setKeybuff(int keybuff ) { this.keybuff = keybuff; }
 	
 	//이미지
-	public ImageIcon getImg() {
-		return img;
+	public ImageIcon getImg(int index) {
+		if(index == 1)
+			return imageRight;
+		else
+			return imageLeft;
 	}
 	
-	public void setImg(ImageIcon img) {
-		this.img = img;
+	public void setImg(ImageIcon image, int index) {
+		if(index == 1)
+			this.imageRight = image;
+		else
+			this.imageLeft = image;
 	}
 	
 	public void setUser(User user)
 	{
 		this.x = user.getX();
 		this.y = user.getY();
-		this.img = user.getImg();
+		this.imageLeft = user.getImg(0);
+		this.imageRight = user.getImg(1);
 		this.keybuff = user.getKeybuff();
 	}
 	
@@ -101,7 +109,8 @@ public class MapleStoryMsg implements Serializable {
 		User user = new User(userName);
 		user.setX(x);
 		user.setY(y);
-		user.setImg(img);
+		user.setImg(imageLeft, 0);
+		user.setImg(imageRight, 1);
 		user.setKeybuff(keybuff);
 		
 		return user;

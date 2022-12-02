@@ -87,14 +87,13 @@ public class MapleStoryView extends JFrame {
 	private ImageIcon walk_4 = new ImageIcon("src/res/img/light-200.png");
 	private ImageIcon UIImageIcon = new ImageIcon("src/res/img/GameUI.png");
 	private ImageIcon backgroundIcon = new ImageIcon("src/res/img/Background.png");
-	private ImageIcon idleIcon =  new ImageIcon("src/res/img/debug.png");
+
+	private ImageIcon userImageIcons[];
 
 	private Image UIImage = UIImageIcon.getImage();
 	private Image backgroundImage = backgroundIcon.getImage();
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
-   //디버그
-	private Image idleImage = idleIcon.getImage();
 	
 	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
 	private int width, height;
@@ -113,6 +112,8 @@ public class MapleStoryView extends JFrame {
 	// 현재시간
 	private long pretime;
 	private final int delay = 17; //17 / 1000초 : 58 (프레임 / 초)
+	private final int gravity = 20;
+	private final int jumpA = 100;
 	
 	
 	
@@ -144,11 +145,14 @@ public class MapleStoryView extends JFrame {
 		
 		setBounds(screenX, screenY, width, height);
 		setResizable(false);
+		addKeyListener(new KeyEventEx());
+		
 		contentPane = new GamePanel();
 		
 		setContentPane(contentPane);
 		
 		setVisible(true);
+		
 		
 		//닉네임 설정
 		init_user(username);
@@ -158,12 +162,21 @@ public class MapleStoryView extends JFrame {
 
 		FrameThread frameThread = new FrameThread();
 		frameThread.start();
+		
+
+		setFocusable(true);
+		requestFocus();
 	}
 	
 	//유저 
 	private void init_user(String username)
 	{
-		user = new User(username,0,0,idleIcon);
+		userImageIcons = new ImageIcon[2];
+		userImageIcons[0] = new ImageIcon("src/res/img/LW1.png");
+		userImageIcons[1] = new ImageIcon("src/res/img/RW1.png");
+		
+		
+		user = new User(username,0,0,userImageIcons);
 		user.setDegree(0);
 		user.setKeybuff(0);
 		//init_server_user();
@@ -177,7 +190,8 @@ public class MapleStoryView extends JFrame {
 		obcm.setName(user.getName());
 		obcm.setX(user.getX());
 		obcm.setY(user.getY());
-		obcm.setImg(user.getImg());
+		obcm.setImg(user.getImg(0), 0);
+		obcm.setImg(user.getImg(1), 1);
 		obcm.setKeybuff(0);
 
 		gameScreen.repaint();//화면 리페인트
@@ -195,14 +209,11 @@ public class MapleStoryView extends JFrame {
 			UIBar uibar = new UIBar();
 			add(uibar);
 			
-			addKeyListener(new KeyEventEx());
 			
 			gameScreen = new GameScreen(this);
 			gameScreen.setBounds(0,0,width,height);
 			add(gameScreen);
 			
-			setFocusable(true);
-			requestFocus();
 		}
 		
 		//그리는 이미지
@@ -215,64 +226,8 @@ public class MapleStoryView extends JFrame {
 			//g.drawImage(idleImage,x,y,46,74,this);
 			
 		}
-		
-		private void drawUser(Graphics g) {
-			Iterator<String> keys = users.keySet().iterator();
-			while(keys.hasNext())
-			{
-				String key = keys.next();
-				 
-				User user = users.get(key);
-				
-				g.drawImage(user.getImg().getImage(),user.getX(), user.getY(),46,74,this);
-			}
-		}
-		
 		//키 이벤트
-		private class KeyEventEx extends KeyAdapter{
-			@Override
-			public void keyPressed(KeyEvent e)
-			{
-				
-				int keydown = e.getKeyCode();
-				switch(keydown) {
-				//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
-				//이후 오브젝트를 받으면 그때 repaint를 해야한다
-				
-				//버퍼를 둔 이유는 
-				case KeyEvent.VK_LEFT:
-					user.setKeybuff(user.getKeybuff()|LEFT_PRESSED);//멀티키의 누르기 처리
-					//send?
-					break;
-				case KeyEvent.VK_RIGHT:
-					user.setKeybuff(user.getKeybuff()|RIGHT_PRESSED);//멀티키의 누르기 처리
-					//send?
-					break;
-				case KeyEvent.VK_UP:
-					break;
-				case KeyEvent.VK_DOWN:
-					break;
-				case KeyEvent.VK_ALT:
-					contentPane.setFocusable(true);
-					contentPane.requestFocus();
-					break;
-				}
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) 
-			{				
-				int keydown = e.getKeyCode();
-				switch(keydown) {
-				case KeyEvent.VK_LEFT:
-					user.setKeybuff(user.getKeybuff()&(~LEFT_PRESSED));//멀티키의 누르기 처리
-					break;
-				case KeyEvent.VK_RIGHT:
-					user.setKeybuff(user.getKeybuff()&(~RIGHT_PRESSED));//멀티키의 누르기 처리
-					break;
-				}
-			}
-		}
+		
 		
 		//UI바
 		private class UIBar extends JPanel{
@@ -331,7 +286,8 @@ public class MapleStoryView extends JFrame {
 						user = users.get(cm.getName());
 						user.setX(cm.getX());
 						user.setY(cm.getY());
-						user.setImg(cm.getImg());
+						user.setImg(cm.getImg(0), 0);
+						user.setImg(cm.getImg(1), 1);
 						System.out.println(cm.getName());
 						break;
 					case "101":
@@ -350,7 +306,8 @@ public class MapleStoryView extends JFrame {
 						//이미지
 						System.out.println("103받음");
 						user = users.get(cm.getName());
-						user.setImg(cm.getImg());
+						user.setImg(cm.getImg(0), 0);
+						user.setImg(cm.getImg(1), 1);
 						break;
 					}
 					
@@ -484,15 +441,44 @@ public class MapleStoryView extends JFrame {
 		private void process() {
 			//나중에 중력 가속도 + 점프 넣을 예정
 			int x = user.getX();
+			int y = user.getY();
+			int velocity = user.getVelocity();
+
+			if(height * 100 - 10000 < y) {
+				y = height * 100 - 12000;
+				velocity = 0;
+				user.setIsJump(false);
+			}
+			else {
+				velocity += gravity;
+				y += velocity;
+						
+			}
+			
 			x += user.getDegree() * 100;
+
+
+			//경계선
 			if(x < 0)
 				x = 0;
 			else if(width * 100 - 4600 < x)
 				x = width * 100 - 4600;
 			
+			if(y < 0)
+				y = 0;
+			if(height * 100 - 14000 < y)
+			{
+				y = height * 100 - 14000;
+				velocity = 0;
+				user.setIsJump(false);
+			}
+			//이 밖에도 땅처리
+			
+
+
 			user.setX(x);
-			
-			
+			user.setY(y);
+			user.setVelocity(velocity);
 		}
 	}
 	
@@ -545,14 +531,83 @@ public class MapleStoryView extends JFrame {
 				String key = keys.next();
 				 
 				User user = users.get(key);
-				
-				gc.drawImage(user.getImg().getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+
+				switch(user.getDegree()) {
+				//idle
+				case 0:
+					if(user.getIsLeft())
+						gc.drawImage(user.getImg(0).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					else
+						gc.drawImage(user.getImg(1).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					break;
+				case -1:
+					gc.drawImage(user.getImg(0).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					break;
+				case 1:
+					gc.drawImage(user.getImg(1).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					break;
+				}
 			}
 		}
 		
 	}
 	
-	
+	private class KeyEventEx extends KeyAdapter{
+		@Override
+		public void keyPressed(KeyEvent e)
+		{
+			
+			int keydown = e.getKeyCode();
+			switch(keydown) {
+			//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
+			//이후 오브젝트를 받으면 그때 repaint를 해야한다
+			
+			//버퍼를 둔 이유는 
+			case KeyEvent.VK_LEFT:
+				user.setKeybuff(user.getKeybuff()|LEFT_PRESSED);//멀티키의 누르기 처리
+				user.setIsLeft(true);
+				//send?
+				break;
+			case KeyEvent.VK_RIGHT:
+				user.setKeybuff(user.getKeybuff()|RIGHT_PRESSED);//멀티키의 누르기 처리
+				user.setIsLeft(false);
+				//send?
+				break;
+			case KeyEvent.VK_UP:
+				break;
+			case KeyEvent.VK_DOWN:
+				break;
+			case KeyEvent.VK_ALT:
+				e.consume();
+				int velocity = user.getVelocity();
+				boolean isJump = user.getIsJump();
+				
+				if(!isJump) {
+					isJump = true;
+					velocity -= 500;
+					user.setVelocity(velocity);
+					user.setIsJump(isJump);
+				}
+				MapleStoryView.this.setFocusable(true);
+				MapleStoryView.this.requestFocus();
+				break;
+			}
+		}
+		
+		@Override
+		public void keyReleased(KeyEvent e) 
+		{				
+			int keydown = e.getKeyCode();
+			switch(keydown) {
+			case KeyEvent.VK_LEFT:
+				user.setKeybuff(user.getKeybuff()&(~LEFT_PRESSED));//멀티키의 누르기 처리
+				break;
+			case KeyEvent.VK_RIGHT:
+				user.setKeybuff(user.getKeybuff()&(~RIGHT_PRESSED));//멀티키의 누르기 처리
+				break;
+			}
+		}
+	}
 	
 	class MyWindowAdapter extends WindowAdapter
 	{
