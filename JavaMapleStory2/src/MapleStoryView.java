@@ -113,7 +113,7 @@ public class MapleStoryView extends JFrame {
 	private long pretime;
 	private final int delay = 17; //17 / 1000초 : 58 (프레임 / 초)
 	private final int gravity = 20;
-	private final int jumpA = 100;
+	private final int jumpA = 100; //점프 가속도
 	
 	
 	
@@ -172,8 +172,8 @@ public class MapleStoryView extends JFrame {
 	private void init_user(String username)
 	{
 		userImageIcons = new ImageIcon[2];
-		userImageIcons[0] = new ImageIcon("src/res/img/LW1.png");
-		userImageIcons[1] = new ImageIcon("src/res/img/RW1.png");
+		userImageIcons[0] = new ImageIcon("src/res/img/IdleLeft.png");
+		userImageIcons[1] = new ImageIcon("src/res/img/IdleRight.png");
 		
 		
 		user = new User(username,0,0,userImageIcons);
