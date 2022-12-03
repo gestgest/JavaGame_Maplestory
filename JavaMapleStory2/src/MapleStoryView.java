@@ -88,7 +88,7 @@ public class MapleStoryView extends JFrame {
 	private ImageIcon UIImageIcon = new ImageIcon("src/res/img/GameUI.png");
 	private ImageIcon backgroundIcon = new ImageIcon("src/res/img/Background.png");
 
-	private ImageIcon userImageIcons[];
+	
 
 	private Image UIImage = UIImageIcon.getImage();
 	private Image backgroundImage = backgroundIcon.getImage();
@@ -115,6 +115,7 @@ public class MapleStoryView extends JFrame {
 	private final int gravity = 20;
 	private final int jumpA = 100; //점프 가속도
 	private final int animationTime = 125;
+	private final int ATTACK_TIME = 250;
 	
 	
 	
@@ -172,20 +173,52 @@ public class MapleStoryView extends JFrame {
 	//유저 
 	private void init_user(String username)
 	{
-		userImageIcons = new ImageIcon[10];
-		userImageIcons[0] = new ImageIcon("src/res/img/character/IdleLeft.png");
-		userImageIcons[1] = new ImageIcon("src/res/img/character/IdleRight.png");
-		userImageIcons[2] = new ImageIcon("src/res/img/character/WalkLeft1.png");
-		userImageIcons[3] = new ImageIcon("src/res/img/character/WalkLeft2.png");
-		userImageIcons[4] = new ImageIcon("src/res/img/character/WalkLeft3.png");
-		userImageIcons[5] = new ImageIcon("src/res/img/character/WalkLeft4.png");
-		userImageIcons[6] = new ImageIcon("src/res/img/character/WalkRight1.png");
-		userImageIcons[7] = new ImageIcon("src/res/img/character/WalkRight2.png");
-		userImageIcons[8] = new ImageIcon("src/res/img/character/WalkRight3.png");
-		userImageIcons[9] = new ImageIcon("src/res/img/character/WalkRight4.png");
+		int i = 0;
+		ImageIcon [][] userImageIcons = new ImageIcon[3][];
+		
+		userImageIcons[i] = new ImageIcon[18];
+		userImageIcons[i][0] = new ImageIcon("src/res/img/character/warrior/IdleLeft.png");
+		userImageIcons[i][1] = new ImageIcon("src/res/img/character/warrior/IdleRight.png");
+		userImageIcons[i][2] = new ImageIcon("src/res/img/character/warrior/WalkLeft1.png");
+		userImageIcons[i][3] = new ImageIcon("src/res/img/character/warrior/WalkLeft2.png");
+		userImageIcons[i][4] = new ImageIcon("src/res/img/character/warrior/WalkLeft3.png");
+		userImageIcons[i][5] = new ImageIcon("src/res/img/character/warrior/WalkLeft4.png");
+		userImageIcons[i][6] = new ImageIcon("src/res/img/character/warrior/WalkRight1.png");
+		userImageIcons[i][7] = new ImageIcon("src/res/img/character/warrior/WalkRight2.png");
+		userImageIcons[i][8] = new ImageIcon("src/res/img/character/warrior/WalkRight3.png");
+		userImageIcons[i][9] = new ImageIcon("src/res/img/character/warrior/WalkRight4.png");
+		userImageIcons[i][10] = new ImageIcon("src/res/img/character/warrior/JumpLeft.png");
+		userImageIcons[i][11] = new ImageIcon("src/res/img/character/warrior/JumpRight.png");
+		userImageIcons[i][12] = new ImageIcon("src/res/img/character/warrior/AttackLeft1.png");
+		userImageIcons[i][13] = new ImageIcon("src/res/img/character/warrior/AttackLeft2.png");
+		userImageIcons[i][14] = new ImageIcon("src/res/img/character/warrior/AttackLeft3.png");
+		userImageIcons[i][15] = new ImageIcon("src/res/img/character/warrior/AttackRight1.png");
+		userImageIcons[i][16] = new ImageIcon("src/res/img/character/warrior/AttackRight2.png");
+		userImageIcons[i][17] = new ImageIcon("src/res/img/character/warrior/AttackRight3.png");
 		
 		
-		user = new User(username,0,0,userImageIcons);
+		i++;
+		userImageIcons[i] = new ImageIcon[12];
+		userImageIcons[i][0] = new ImageIcon("src/res/img/character/maze/IdleLeft.png");
+		userImageIcons[i][1] = new ImageIcon("src/res/img/character/maze/IdleRight.png");
+		userImageIcons[i][2] = new ImageIcon("src/res/img/character/maze/WalkLeft1.png");
+		userImageIcons[i][3] = new ImageIcon("src/res/img/character/maze/WalkLeft2.png");
+		userImageIcons[i][4] = new ImageIcon("src/res/img/character/maze/WalkLeft3.png");
+		userImageIcons[i][5] = new ImageIcon("src/res/img/character/maze/WalkLeft4.png");
+		userImageIcons[i][6] = new ImageIcon("src/res/img/character/maze/WalkRight1.png");
+		userImageIcons[i][7] = new ImageIcon("src/res/img/character/maze/WalkRight2.png");
+		userImageIcons[i][8] = new ImageIcon("src/res/img/character/maze/WalkRight3.png");
+		userImageIcons[i][9] = new ImageIcon("src/res/img/character/maze/WalkRight4.png");
+		userImageIcons[i][10] = new ImageIcon("src/res/img/character/maze/JumpLeft.png");
+		userImageIcons[i][11] = new ImageIcon("src/res/img/character/maze/JumpRight.png");
+		
+		
+		// 추가
+		
+		//전사 법사 궁수
+		user = new User(username,0,0,0,userImageIcons[0]);
+		
+		
 		user.setDegree(0);
 		user.setKeybuff(0);
 		//init_server_user();
@@ -291,7 +324,7 @@ public class MapleStoryView extends JFrame {
 					//로그인
 					case "100":
 						//닉네임
-						users.put(cm.getName(), new User( cm.getName() ));
+						users.put(cm.getName(), new User( cm.getName(), cm.getType() ));
 						user = users.get(cm.getName());
 						user.setX(cm.getX());
 						user.setY(cm.getY());
@@ -428,6 +461,7 @@ public class MapleStoryView extends JFrame {
 			int y = user.getY();
 			int velocity = user.getVelocity();
 
+			
 			if(height * 100 - 10000 < y) {
 				y = height * 100 - 12000;
 				velocity = 0;
@@ -439,7 +473,8 @@ public class MapleStoryView extends JFrame {
 						
 			}
 			
-			x += user.getDegree() * 100;
+			if(!user.getIsAttack() || user.getIsJump())
+				x += user.getDegree() * 100;
 
 
 			//경계선
@@ -459,6 +494,7 @@ public class MapleStoryView extends JFrame {
 			//이 밖에도 땅처리
 			
 
+			//걷는 애니메이션
 			if(user.getIsWalk())
 			{
 				long mytime = user.getWalkStart();
@@ -466,7 +502,19 @@ public class MapleStoryView extends JFrame {
 				if(animationTime * 4 <= mytime)
 					mytime %= (animationTime * 4);
 
+				
 				user.setWalkTime(mytime);
+			}
+			if(user.getIsAttack())
+			{
+				long mytime = user.getAttackStart();
+				mytime = pretime - mytime;
+				if(ATTACK_TIME * 3 <= mytime)
+				{
+					user.setIsAttack(false);
+					mytime = 0;
+				}
+				user.setAttackTime(mytime);
 			}
 
 			user.setX(x);
@@ -550,9 +598,31 @@ public class MapleStoryView extends JFrame {
 				 
 				User user = users.get(key);
 
+				
+
+				if(user.getIsAttack())
+				{
+					int index = (int)user.getAttackTime();
+					index /= ATTACK_TIME;
+					if(user.getIsLeft())
+						gc.drawImage(user.getImg(index + 12).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					else
+						gc.drawImage(user.getImg(index + 15).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					continue;
+				}
+				
+				if(user.getIsJump())
+				{
+					if(user.getIsLeft())
+						gc.drawImage(user.getImg(10).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					else
+						gc.drawImage(user.getImg(11).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					continue;
+				}
+
+
 				int index = (int)user.getWalkTime();
 				index /= animationTime;
-
 				switch(user.getDegree()) {
 				//idle
 				case 0:
@@ -612,12 +682,22 @@ public class MapleStoryView extends JFrame {
 				break;
 			case KeyEvent.VK_DOWN:
 				break;
+			case KeyEvent.VK_CONTROL:
+
+				boolean isAttack = user.getIsAttack();
+				if(!isAttack){
+					isAttack = true;
+					user.setIsAttack(isAttack);
+					user.setAttackStart(pretime);
+				}
+				
+				break;
 			case KeyEvent.VK_ALT:
 				e.consume();
-				int velocity = user.getVelocity();
 				boolean isJump = user.getIsJump();
 				
 				if(!isJump) {
+					int velocity = user.getVelocity();
 					isJump = true;
 					velocity -= 500;
 					user.setVelocity(velocity);
