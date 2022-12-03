@@ -11,33 +11,44 @@ public class User {
 	// 오른쪽1
 	// 왼쪽 걷기 2 3 4 5
 	// 오른쪽 걷기 6 7 8 9
+	// 왼 쩜 10
+	// 오른 쩜 11
+	// 왼 공 12 13 14
+	// 오른 공 15 16 17
 	private ImageIcon image[];
+	private int type; //[전사 : 0, 법사 : 1, 궁수 : 2]
 	private int keybuff;
 	private int degree;
 	private boolean isLeft;
 	private boolean isJump;
 	private boolean isWalk;
+	private boolean isAttack;
 	private long walkStart;
 	private long walkTime;
+	private long attackStart;
+	private long attackTime;
 	private int velocity;
 	
 	
 	//없앨 내용 [로그인을 처음 했다면]
-	public User(String name, int x, int y, ImageIcon image[])
+	public User(String name,int type, int x, int y, ImageIcon image[])
 	{
 		this.name = name;
+		this.type = type;
 		this.x = x;
 		this.y = y;
-
+		
 		this.image = new ImageIcon[image.length];
 		for(int i = 0; i < image.length; i++)
 		{
 			this.image[i] = image[i];
 		}
+		init_User();
 	}
-	public User(String username)
+	public User(String username, int type)
 	{
 		this.name = username;
+		this.type = type;
 	}
 	
 	public User(User user)
@@ -57,6 +68,7 @@ public class User {
 		this.isLeft = true;
 		this.isJump = true;
 		this.isWalk = false;
+		this.isAttack = false;
 		this.walkStart = 0;
 		this.walkTime = 0;
 		this.velocity = 0;
@@ -67,6 +79,10 @@ public class User {
 
 	public String getName() {return name; }
 	public void setName(String name) {this.name = name; }
+
+	public int getType() { return type; }
+	public void setType(int type ) { this.type = type; }
+	
 	public int getX() { return x; }
 	public int getY() { return y; }
 	public void setX(int x) { this.x = x; }
@@ -86,7 +102,10 @@ public class User {
 	public void setIsJump(boolean isJump) { this.isJump = isJump; }
 	public boolean getIsWalk() { return isWalk; }
 	public void setIsWalk(boolean isWalk) { this.isWalk = isWalk; }
+	public boolean getIsAttack() { return isAttack; }
+	public void setIsAttack(boolean isAttack) { this.isAttack = isAttack; }
 
+	
 	public int getVelocity() { return velocity; }
 	public void setVelocity(int velocity) { this.velocity = velocity; }
 
@@ -94,15 +113,17 @@ public class User {
 	public void setWalkStart(long walkStart) { this.walkStart = walkStart; }
 	public long getWalkTime() { return walkTime; }
 	public void setWalkTime(long walkTime) { this.walkTime = walkTime; }
+	public long getAttackStart() { return attackStart; }
+	public void setAttackStart(long attackStart) { this.attackStart = attackStart; }
+	public long getAttackTime() { return attackTime; }
+	public void setAttackTime(long attackTime) { this.attackTime = attackTime; }
 	
 	
 	//index : 0 : leftidle
 	//1 : rightidle
 	public ImageIcon getImg(int index) {
-		if(10 <= index) {
-			System.out.println("10 넘음");
+		if(image.length <= index)
 			return image[0];
-		}
 		return image[index];
 	}
 	
