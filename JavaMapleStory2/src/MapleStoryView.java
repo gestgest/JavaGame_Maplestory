@@ -9,6 +9,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
@@ -27,14 +29,6 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JCheckBox;
-import javax.swing.SwingConstants;
 import javax.swing.ImageIcon;
 
 import java.awt.Font;
@@ -53,6 +47,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import data.MapleStoryMsg;
+import data.Monster;
 import data.User;
 
 import javax.swing.JToggleButton;
@@ -104,19 +99,26 @@ public class MapleStoryView extends JFrame {
 	final int LEFT_PRESSED	=0x001;
 	final int RIGHT_PRESSED	=0x002;
 	
-	
-	//나중에 캐릭터 클래스 만들거임
-	private User user;
-	private HashMap<String, User> users = new HashMap<String, User>(3);
 
 	// 현재시간
-	private long pretime;
 	private final int delay = 17; //17 / 1000초 : 58 (프레임 / 초)
 	private final int gravity = 20;
 	private final int jumpA = 100; //점프 가속도
 	private final int animationTime = 125;
 	private final int ATTACK_TIME = 250;
+	private final int RESPAWN_TIME = 3000;
+	private final int MAX_MONSTER_COUNT = 5; //최대 슬라임 개수
 	
+	
+	//나중에 캐릭터 클래스 만들거임
+	private User user;
+	private HashMap<String, User> users = new HashMap<String, User>(3);
+	private Vector<Monster> monsters = new Vector<Monster>(MAX_MONSTER_COUNT);
+
+
+	private long pretime;
+	private long spawnStart;
+	private boolean isSpawn = false;
 	
 	
 	
@@ -148,6 +150,7 @@ public class MapleStoryView extends JFrame {
 		setBounds(screenX, screenY, width, height);
 		setResizable(false);
 		addKeyListener(new KeyEventEx());
+		addMouseListener(new MyMouseAdapter());
 		
 		contentPane = new GamePanel();
 		
@@ -455,6 +458,8 @@ public class MapleStoryView extends JFrame {
 				e.printStackTrace();
 			}
 		}
+		
+		
 		private void process() {
 			//나중에 중력 가속도 + 점프 넣을 예정
 			int x = user.getX();
@@ -520,6 +525,8 @@ public class MapleStoryView extends JFrame {
 			user.setX(x);
 			user.setY(y);
 			user.setVelocity(velocity);
+			
+			monsterRespawn();
 		}
 		
 		//키 입력 받았던거 보내는 역할
@@ -544,6 +551,35 @@ public class MapleStoryView extends JFrame {
 			//obcm.setKeybuff(keybuff);
 			//obcm.setName(user.getName());
 			//SendObject(obcm);
+		}
+		
+		//스폰
+		private void monsterRespawn() {
+			//spawnStart
+			if(monsters.size() < MAX_MONSTER_COUNT)
+			{
+				if(!isSpawn) {
+					spawnStart = pretime;
+					isSpawn = true;
+
+					return;
+				}
+				//대기 시간이 지나면 슬라임 리스폰
+				if(RESPAWN_TIME <= pretime - spawnStart)
+				{
+					int count = (int) (Math.random() * 3 + 1);
+					isSpawn = false;
+					for(int i = 0; i < count && monsters.size() < 5; i++)
+					{
+						//이미지들
+						Monster monster = new Monster();
+						monsters.add(monster);
+					}
+				}
+			}
+				
+			
+			
 		}
 		
 	}
@@ -587,6 +623,8 @@ public class MapleStoryView extends JFrame {
 			//배경
 			gc.drawImage(backgroundImage,-100,-100,width + 100,height + 100,this);
 			drawUser();
+			drawMonster();
+			
 		}
 		
 		private void drawUser()
@@ -639,6 +677,16 @@ public class MapleStoryView extends JFrame {
 					gc.drawImage(user.getImg(index + 6).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
 					break;
 				}
+			}
+		}
+		
+		private void drawMonster() 
+		{
+			for(int i = 0; i < monsters.size(); i++)
+			{
+				Monster monster = monsters.get(i);
+				//대충 그리는 함수
+				gc.drawImage(monster.getImg(0).getImage(),monster.getX() / 100, monster.getY() / 100,75,51,this);
 			}
 		}
 		
@@ -703,8 +751,6 @@ public class MapleStoryView extends JFrame {
 					user.setVelocity(velocity);
 					user.setIsJump(isJump);
 				}
-				MapleStoryView.this.setFocusable(true);
-				MapleStoryView.this.requestFocus();
 				break;
 			}
 		}
@@ -725,6 +771,27 @@ public class MapleStoryView extends JFrame {
 				user.setWalkTime(0);
 				break;
 			}
+		}
+	}
+	
+	class MyMouseAdapter extends MouseAdapter{
+		public void mousePressed(MouseEvent e) {
+			System.out.println("비약");
+			MapleStoryView.this.setFocusable(true);
+			MapleStoryView.this.requestFocus();
+			
+		}
+		public void mouseReleased(MouseEvent e) {
+			System.out.println("비약");
+			MapleStoryView.this.setFocusable(true);
+			MapleStoryView.this.requestFocus();
+			
+		}
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			System.out.println("비약");
+			MapleStoryView.this.setFocusable(true);
+			MapleStoryView.this.requestFocus();
 		}
 	}
 	
