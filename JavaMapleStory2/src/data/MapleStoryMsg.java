@@ -12,7 +12,8 @@ public class MapleStoryMsg implements Serializable {
 	private String data;
 	
 	private int x,y;
-	private int type;
+	private int type; //직업타입
+	// 이미지를 안보내도 되지않을까 [이미지 타임만 보내면 되지 않을까]
 	private ImageIcon imageLeft;
 	private ImageIcon imageRight;
 	//코드와 짜잘한 x,y와 같은 사소한 data값을 넣고 프로토콜로 분류한다
