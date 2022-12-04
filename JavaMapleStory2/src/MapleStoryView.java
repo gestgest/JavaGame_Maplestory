@@ -11,6 +11,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
@@ -73,20 +75,19 @@ public class MapleStoryView extends JFrame {
 	//펜
 	private GamePanel contentPane;
 	GameScreen gameScreen;//Canvas 객체를 상속한 화면 묘화 메인 클래스
+	private MyMouseEvent myMouseEvent; 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	//이미지 자료
-	private ImageIcon walk_1 = new ImageIcon("src/res/img/light-191.png");
-	private ImageIcon walk_2 = new ImageIcon("src/res/img/light-194.png");
-	private ImageIcon walk_3 = new ImageIcon("src/res/img/light-197.png");
-	private ImageIcon walk_4 = new ImageIcon("src/res/img/light-200.png");
 	private ImageIcon UIImageIcon = new ImageIcon("src/res/img/GameUI.png");
 	private ImageIcon backgroundIcon = new ImageIcon("src/res/img/Background.png");
+	private ImageIcon maptileIcon = new ImageIcon("src/res/img/maptile/mapTiles5.png");
 
 	
 
 	private Image UIImage = UIImageIcon.getImage();
 	private Image backgroundImage = backgroundIcon.getImage();
+	private Image maptile = maptileIcon.getImage();
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	
@@ -150,12 +151,12 @@ public class MapleStoryView extends JFrame {
 		setBounds(screenX, screenY, width, height);
 		setResizable(false);
 		addKeyListener(new KeyEventEx());
-		addMouseListener(new MyMouseAdapter());
-		
+		myMouseEvent = new MyMouseEvent();
 		contentPane = new GamePanel();
 		
 		setContentPane(contentPane);
-		
+
+		contentPane.addMouseListener(myMouseEvent);
 		setVisible(true);
 		
 		
@@ -257,6 +258,7 @@ public class MapleStoryView extends JFrame {
 			
 			gameScreen = new GameScreen(this);
 			gameScreen.setBounds(0,0,width,height);
+
 			add(gameScreen);
 			
 		}
@@ -287,6 +289,7 @@ public class MapleStoryView extends JFrame {
 				UIx = 0;
 				UIy = UIheight * 7;
 				setBounds(UIx,UIy,UIwidth,UIheight);
+				
 				
 			}
 			public void paintComponent(Graphics g) {
@@ -466,9 +469,10 @@ public class MapleStoryView extends JFrame {
 			int y = user.getY();
 			int velocity = user.getVelocity();
 
-			
-			if(height * 100 - 10000 < y) {
-				y = height * 100 - 12000;
+
+			if(height * 100 - 8700 < y)
+			{
+				y = height * 100 - 8700;
 				velocity = 0;
 				user.setIsJump(false);
 			}
@@ -490,9 +494,9 @@ public class MapleStoryView extends JFrame {
 			
 			if(y < 0)
 				y = 0;
-			if(height * 100 - 14000 < y)
+			if(height * 100 - 8700 < y)
 			{
-				y = height * 100 - 14000;
+				y = height * 100 - 8700;
 				velocity = 0;
 				user.setIsJump(false);
 			}
@@ -527,6 +531,7 @@ public class MapleStoryView extends JFrame {
 			user.setVelocity(velocity);
 			
 			monsterRespawn();
+			monster_process();
 		}
 		
 		//키 입력 받았던거 보내는 역할
@@ -577,11 +582,64 @@ public class MapleStoryView extends JFrame {
 					}
 				}
 			}
+		}
+		private void monster_process() {
+
+			for(int i = 0; i < monsters.size(); i++)
+			{
+				Monster monster = monsters.get(i);
 				
-			
+				//아무 행동을 안한 경우 [idle상태 + 걷지도 않는 경우]
+				if(!monster.getIsThinking() && !monster.getIsWalk())
+				{
+					monster.setThinkStart(pretime);
+					monster.setIsThinking(true);
+					int time = (int)(Math.random() * 2000 + 3000);
+					monster.setThinkTime(time);
+				}
+				//행동
+				else if(!monster.getIsWalk() && monster.getIsThinking())
+				{
+					//행동 개시
+					if(monster.getThinkTime() < pretime - monster.getThinkStart())
+					{
+						int degree = (int)(Math.random() * 3) - 1;
+
+						if(degree != 0)
+						{
+							monster.setWalkStart(pretime);
+							int time = (int)(Math.random() * 2000 + 3000);
+							monster.setWalkTime(time);
+							monster.setDegree(degree);
+							monster.setIsWalk(true);
+						}
+						monster.setIsThinking(false);
+						
+					}
+				}
+				else if(monster.getIsWalk())
+				{ 
+					int x = monster.getX();
+					//다 걸음
+					if(monster.getWalkTime() < pretime - monster.getWalkStart())
+					{
+						monster.setIsWalk(false);
+						
+					}
+					///////////움직이는 함수
+					x += monster.getDegree() * 100;
+
+					if(x < 0)
+						x = 0;
+					else if(width * 100 - 4600 < x)
+						x = width * 100 - 4600;
+					
+					monster.setX(x);
+				}
+				
+			}
 			
 		}
-		
 	}
 	
 	private class GameScreen extends Canvas{
@@ -592,6 +650,8 @@ public class MapleStoryView extends JFrame {
 		GameScreen(GamePanel gamePanel)
 		{
 			this.myGamePanel = gamePanel;
+			this.addMouseListener(myMouseEvent);
+
 		}
 		public void paint(Graphics g)
 		{
@@ -620,11 +680,18 @@ public class MapleStoryView extends JFrame {
 			//실제 그리는 동작은 이 함수에서 모두 행한다.
 			//버퍼에 그리는 기능
 			
-			//배경
-			gc.drawImage(backgroundImage,-100,-100,width + 100,height + 100,this);
+			gc.drawImage(backgroundImage,-100,-100,width + 100,height + 100,this);//배경
+			//벽
+
+			drawTile();
 			drawUser();
 			drawMonster();
 			
+		}
+		private void drawTile() {
+
+			for(int i = 0; i < width / 50; i++)
+				gc.drawImage(maptile,i * 50,500,50,50,this);//배경
 		}
 		
 		private void drawUser()
@@ -635,26 +702,41 @@ public class MapleStoryView extends JFrame {
 				String key = keys.next();
 				 
 				User user = users.get(key);
-
+				int x = user.getX() / 100;
+				int y = user.getY() / 100;
+				Image img;
 				
 
 				if(user.getIsAttack())
 				{
 					int index = (int)user.getAttackTime();
 					index /= ATTACK_TIME;
+					
 					if(user.getIsLeft())
-						gc.drawImage(user.getImg(index + 12).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+						img = user.getImg(index + 12).getImage();
 					else
-						gc.drawImage(user.getImg(index + 15).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+						img = user.getImg(index + 15).getImage();
+					int w = img.getWidth(myGamePanel);
+					int h = img.getHeight(myGamePanel);
+					
+					x = x + (w / 2);
+					y = y - h;
+					gc.drawImage(img,x,y,w,h,this);
 					continue;
 				}
 				
 				if(user.getIsJump())
 				{
 					if(user.getIsLeft())
-						gc.drawImage(user.getImg(10).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+						img = user.getImg(10).getImage();
 					else
-						gc.drawImage(user.getImg(11).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+						img = user.getImg(11).getImage();
+					int w = img.getWidth(myGamePanel);
+					int h = img.getHeight(myGamePanel);
+					
+					x = x + (w / 2);
+					y = y - h;
+					gc.drawImage(img,x,y,w,h,this);
 					continue;
 				}
 
@@ -662,21 +744,30 @@ public class MapleStoryView extends JFrame {
 				int index = (int)user.getWalkTime();
 				index /= animationTime;
 				switch(user.getDegree()) {
-				//idle
-				case 0:
-					if(user.getIsLeft())
-						gc.drawImage(user.getImg(0).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
-					else
-						gc.drawImage(user.getImg(1).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
-					break;
 				case -1:
-					gc.drawImage(user.getImg(index + 2).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					img = user.getImg(index + 2).getImage();
 					break;
 				case 1:
-
-					gc.drawImage(user.getImg(index + 6).getImage(),user.getX() / 100, user.getY() / 100,46,74,this);
+					img = user.getImg(index + 6).getImage();
 					break;
+				default:
+					if(user.getIsLeft())
+						img = user.getImg(0).getImage();
+					else
+						img = user.getImg(1).getImage();
+					break;
+					
 				}
+
+				
+				int w = img.getWidth(myGamePanel);
+				int h = img.getHeight(myGamePanel);
+				
+				x = x + (w / 2);
+				y = y - h;
+				gc.drawImage(img,x,y,w,h,this);
+				
+				
 			}
 		}
 		
@@ -686,7 +777,44 @@ public class MapleStoryView extends JFrame {
 			{
 				Monster monster = monsters.get(i);
 				//대충 그리는 함수
-				gc.drawImage(monster.getImg(0).getImage(),monster.getX() / 100, monster.getY() / 100,75,51,this);
+				
+				int degree = monster.getDegree();
+				int x = monster.getX() / 100;
+				int y = monster.getY() / 100;
+				Image img;
+				
+				//이동하는 경우
+				if(monster.getIsWalk())
+				{
+					int deltatime = (int) (pretime - monster.getWalkStart());
+					int index = deltatime / animationTime;
+					index %= 7;
+					
+					if(degree == 1) {
+						 img = monster.getImg(19 + index).getImage();
+					}
+					else {
+						 img = monster.getImg(3 + index).getImage();
+					}
+						
+				}
+				else {
+					int deltatime = (int) (pretime - monster.getThinkStart());
+					int index = deltatime / (animationTime * 2);
+					index %= 3;
+					if(degree == 1) {
+						 img = monster.getImg(16 + index).getImage();
+					}
+					else {
+						 img = monster.getImg(index).getImage();
+					}
+				}
+				int w = img.getWidth(myGamePanel);
+				int h = img.getHeight(myGamePanel);
+				
+				x = x + (w / 2);
+				y = y - h;
+				gc.drawImage(img,x,y,w,h,this);
 			}
 		}
 		
@@ -774,24 +902,36 @@ public class MapleStoryView extends JFrame {
 		}
 	}
 	
-	class MyMouseAdapter extends MouseAdapter{
-		public void mousePressed(MouseEvent e) {
-			System.out.println("비약");
-			MapleStoryView.this.setFocusable(true);
-			MapleStoryView.this.requestFocus();
-			
+	class MyMouseEvent implements MouseListener, MouseMotionListener{
+		public void mouseDragged(MouseEvent e) {
 		}
-		public void mouseReleased(MouseEvent e) {
-			System.out.println("비약");
-			MapleStoryView.this.setFocusable(true);
-			MapleStoryView.this.requestFocus();
-			
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
 		}
+
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			System.out.println("비약");
 			MapleStoryView.this.setFocusable(true);
 			MapleStoryView.this.requestFocus();
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
 		}
 	}
 	

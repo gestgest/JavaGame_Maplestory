@@ -1,4 +1,4 @@
-
+	
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -6,9 +6,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -23,6 +27,7 @@ public class LoginClient extends JFrame {
 
 	ImageIcon backgroundIcon = new ImageIcon("src/res/img/LoginBackground.jpg");
 	Image backgroundImg = backgroundIcon.getImage();
+	private Clip clip;
 	
 	//해상도, 높이가 900이상이면 높은 해상도, 아니면 800, 600해상도
 	private int width, height;
@@ -34,6 +39,8 @@ public class LoginClient extends JFrame {
 	/**
 	 * Create the frame.
 	 */
+	
+	
 	public LoginClient() {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,6 +65,22 @@ public class LoginClient extends JFrame {
 		setContentPane(contentPane);
 		
 	}
+	
+	public void audio() {
+        try {
+     	   File file = new File("src/res/bgm/loginbgm.wav");
+            clip = AudioSystem.getClip();
+            clip.open(AudioSystem.getAudioInputStream(file));
+            FloatControl gainControl = 
+            	    (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            	gainControl.setValue(-20.0f); // Reduce volume by 10 decibels.
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            
+            clip.start();
+        } catch (Exception e) {
+            System.err.println("Put the music.wav file in the sound folder if you want to play background music, only optional!");
+        }
+    }
 	
 	class LoginPanel extends JPanel
 	{
@@ -117,6 +140,7 @@ public class LoginClient extends JFrame {
 			txtPortNumber.addActionListener(action);
 			
 			repaint();
+			audio();
 		}
 		
 		public void paintComponent(Graphics g) {
@@ -133,6 +157,8 @@ public class LoginClient extends JFrame {
 			String ip_addr = txtIpAddress.getText().trim();
 			String port_no = txtPortNumber.getText().trim();
 			MapleStoryView view = new MapleStoryView(username, ip_addr, port_no);
+			clip.stop();
+			clip.close();
 			setVisible(false);
 		}
 	}
