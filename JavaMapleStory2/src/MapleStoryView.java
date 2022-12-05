@@ -17,6 +17,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -31,6 +32,9 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.ImageIcon;
 
 import java.awt.Font;
@@ -79,15 +83,17 @@ public class MapleStoryView extends JFrame {
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	//이미지 자료
-	private ImageIcon UIImageIcon = new ImageIcon("src/res/img/GameUI.png");
+	private ImageIcon UIImageIcon = new ImageIcon("src/res/img/GameUI.jpg");
+	private ImageIcon UIhpIcon = new ImageIcon("src/res/img/hp.jpg");
 	private ImageIcon backgroundIcon = new ImageIcon("src/res/img/Background.png");
 	private ImageIcon maptileIcon = new ImageIcon("src/res/img/maptile/mapTiles5.png");
 
 	
-
 	private Image UIImage = UIImageIcon.getImage();
 	private Image backgroundImage = backgroundIcon.getImage();
 	private Image maptile = maptileIcon.getImage();
+	private Image UIhpImage = UIhpIcon.getImage();
+	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	
@@ -120,6 +126,7 @@ public class MapleStoryView extends JFrame {
 	private long pretime;
 	private long spawnStart;
 	private boolean isSpawn = false;
+	private Clip clip;
 	
 	
 	
@@ -158,6 +165,18 @@ public class MapleStoryView extends JFrame {
 
 		contentPane.addMouseListener(myMouseEvent);
 		setVisible(true);
+		
+		try {
+     	    File file = new File("src/res/bgm/slimedead.wav");
+	        clip = AudioSystem.getClip();
+	        clip.open(AudioSystem.getAudioInputStream(file));
+	        FloatControl gainControl = 
+	        	    (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+	        	gainControl.setValue(-20.0f); // Reduce volume by 10 decibels.
+	        
+        } catch (Exception e) {
+            System.err.println("Put the music.wav file in the sound folder if you want to play background music, only optional!");
+        }
 		
 		
 		//닉네임 설정
@@ -247,12 +266,12 @@ public class MapleStoryView extends JFrame {
 	
 	//메인 메인 판넬
 	private class GamePanel extends JPanel{
-		
+		private UIBar uibar; 
 		public GamePanel()
 		{
 			setLayout(null);
 			setBorder(new EmptyBorder(5, 5, 5, 5));
-			UIBar uibar = new UIBar();
+			uibar = new UIBar();
 			add(uibar);
 			
 			
@@ -275,6 +294,10 @@ public class MapleStoryView extends JFrame {
 		}
 		//키 이벤트
 		
+		public void painthp() {
+			uibar.repaint();
+		}
+		
 		
 		//UI바
 		private class UIBar extends JPanel{
@@ -295,6 +318,8 @@ public class MapleStoryView extends JFrame {
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g); //795 / 41 
 				g.drawImage(UIImage,0,0,width,width * 41 / 795,this);
+				g.clipRect(224, 20, 105 * user.getHP() / 100, 14);
+				g.drawImage(UIhpImage,224,20,105,14,this);
 			}
 		}
 	}
@@ -444,7 +469,9 @@ public class MapleStoryView extends JFrame {
 			{
 				while(true){
 					pretime=System.currentTimeMillis();
-
+					
+					
+					contentPane.painthp();
 					gameScreen.repaint();//화면 리페인트
 					process();//각종 충돌 처리
 					keypross();//키 처리
@@ -530,6 +557,8 @@ public class MapleStoryView extends JFrame {
 			user.setY(y);
 			user.setVelocity(velocity);
 			
+			
+			damagedProcess();
 			monsterRespawn();
 			monster_process();
 		}
@@ -556,6 +585,43 @@ public class MapleStoryView extends JFrame {
 			//obcm.setKeybuff(keybuff);
 			//obcm.setName(user.getName());
 			//SendObject(obcm);
+		}
+		
+		private void damagedProcess() {
+			int w = user.getImg(0).getIconWidth();
+			w *= 90;
+			for(int i = 0; i < monsters.size(); i++) {
+				Monster monster = monsters.get(i);
+				
+				//위치비교 [몬스터가 오른쪽]
+				if(0 <= monster.getX() - user.getX() && monster.getX() - user.getX() <= w && !user.getIsDamaged()) {
+					int hp = user.getHP();
+					hp -= 10;
+					
+					user.setHP(hp);
+					
+					user.setIsDamaged(true);
+					user.setDamagedStart(pretime);
+				}
+				//몬스터가 왼쪽
+				else if(0 <= user.getX() - monster.getX()&& user.getX() - monster.getX()  <= w && !user.getIsDamaged()) {
+					int hp = user.getHP();
+					hp -= 10;
+					//if
+					user.setHP(hp);
+					
+					user.setIsDamaged(true);
+					user.setDamagedStart(pretime);
+				}
+			}
+			if(user.getIsDamaged()) {
+				user.setDamagedTime((int) (pretime - user.getDamagedStart()));
+				//무적시간
+				if(1500 <= user.getDamagedTime()) {
+					user.setIsDamaged(false);
+				}
+				
+			}
 		}
 		
 		//스폰
@@ -588,6 +654,15 @@ public class MapleStoryView extends JFrame {
 			for(int i = 0; i < monsters.size(); i++)
 			{
 				Monster monster = monsters.get(i);
+				
+				if(monster.getIsDead())
+				{
+					monster.setDeadTime((int)(pretime - monster.getDeadStart()));
+					if(animationTime * 4 <= monster.getDeadTime()) {
+						monsters.remove(i);
+						continue;
+					}
+				}
 				
 				//아무 행동을 안한 경우 [idle상태 + 걷지도 않는 경우]
 				if(!monster.getIsThinking() && !monster.getIsWalk())
@@ -771,6 +846,7 @@ public class MapleStoryView extends JFrame {
 			}
 		}
 		
+		//몬스터 그리기
 		private void drawMonster() 
 		{
 			for(int i = 0; i < monsters.size(); i++)
@@ -782,6 +858,7 @@ public class MapleStoryView extends JFrame {
 				int x = monster.getX() / 100;
 				int y = monster.getY() / 100;
 				Image img;
+				
 				
 				//이동하는 경우
 				if(monster.getIsWalk())
@@ -809,6 +886,19 @@ public class MapleStoryView extends JFrame {
 						 img = monster.getImg(index).getImage();
 					}
 				}
+
+				if(monster.getIsDead()) {
+					int index = monster.getDeadTime() / animationTime;
+					index %= 4;
+					if(degree == 1) {
+						 img = monster.getImg(28 + index).getImage();
+					}
+					else {
+						 img = monster.getImg(12 + index).getImage();
+					}
+					
+				}
+				
 				int w = img.getWidth(myGamePanel);
 				int h = img.getHeight(myGamePanel);
 				
@@ -859,12 +949,45 @@ public class MapleStoryView extends JFrame {
 			case KeyEvent.VK_DOWN:
 				break;
 			case KeyEvent.VK_CONTROL:
-
+				
 				boolean isAttack = user.getIsAttack();
 				if(!isAttack){
 					isAttack = true;
+					//몬스터가 있는지
+					
+					boolean isLeft = user.getIsLeft();
+					int userX = user.getX();
+					
+					for(int i = 0; i < monsters.size(); i++) {
+						Monster monster = monsters.get(i);
+						int monsterX = monster.getX();
+						if(isLeft)
+						{
+							//슬라임 기준만 정함
+							if(userX - monsterX  <=  9000 && -2000 <= (userX - monsterX))
+							{
+								monster.setDeadStart(pretime);
+								monster.setIsDead(true);
+						        clip.loop(1);
+								clip.start();
+								break;
+							}
+						}
+						else{
+							if((monsterX - userX <=  9000) && (-2000 <= monsterX - userX))
+							{
+								monster.setDeadStart(pretime);
+								monster.setIsDead(true);
+						        clip.loop(1);
+								clip.start();
+								break;
+							}
+							
+						}
+					}
 					user.setIsAttack(isAttack);
 					user.setAttackStart(pretime);
+					
 				}
 				
 				break;
@@ -935,6 +1058,8 @@ public class MapleStoryView extends JFrame {
 		}
 	}
 	
+	
+	
 	class MyWindowAdapter extends WindowAdapter
 	{
 		// 윈도우를 닫기 위한 부가 클래스. 실제 닫는 동작은
@@ -959,6 +1084,7 @@ public class MapleStoryView extends JFrame {
 			System.exit(0);
 		}
 	}
+	
 	
 }
 

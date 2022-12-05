@@ -5,6 +5,7 @@ import javax.swing.ImageIcon;
 public class User {
 	private String name;
 
+	private int hp;
 	private int x,y; //실제론 10000, 10000 => 100,100
 	//여러개의 이미지
 	// 왼쪽0
@@ -19,14 +20,17 @@ public class User {
 	private int type; //[전사 : 0, 법사 : 1, 궁수 : 2]
 	private int keybuff;
 	private int degree;
+	private int damagedTime;
 	private boolean isLeft;
 	private boolean isJump;
 	private boolean isWalk;
 	private boolean isAttack;
+	private boolean isDamaged;
 	private long walkStart;
 	private long walkTime;
 	private long attackStart;
 	private long attackTime;
+	private long damagedStart;
 	private int velocity;
 	
 	
@@ -74,6 +78,7 @@ public class User {
 		this.velocity = 0;
 		this.keybuff = 0;
 		this.degree = 0;
+		this.hp = 100;
 		
 	}
 
@@ -92,10 +97,14 @@ public class User {
 
 	public int getKeybuff() { return keybuff; }
 	public void setKeybuff(int keybuff) { this.keybuff = keybuff; }
-	
+	public int getHP() { return hp; }
+	public void setHP(int hp) { this.hp = hp; }
+
 	public int getDegree() { return degree; }
 	public void setDegree(int degree) { this.degree = degree; }
-
+	public int getDamagedTime() { return damagedTime; }
+	public void setDamagedTime(int damagedTime) { this.damagedTime = damagedTime; }
+	
 	public boolean getIsLeft() { return isLeft; }
 	public void setIsLeft(boolean isLeft) { this.isLeft = isLeft; }
 	public boolean getIsJump() { return isJump; }
@@ -104,7 +113,9 @@ public class User {
 	public void setIsWalk(boolean isWalk) { this.isWalk = isWalk; }
 	public boolean getIsAttack() { return isAttack; }
 	public void setIsAttack(boolean isAttack) { this.isAttack = isAttack; }
-
+	public boolean getIsDamaged() { return isDamaged; }
+	public void setIsDamaged(boolean isDamaged) { this.isDamaged = isDamaged; }
+	
 	
 	public int getVelocity() { return velocity; }
 	public void setVelocity(int velocity) { this.velocity = velocity; }
@@ -117,6 +128,8 @@ public class User {
 	public void setAttackStart(long attackStart) { this.attackStart = attackStart; }
 	public long getAttackTime() { return attackTime; }
 	public void setAttackTime(long attackTime) { this.attackTime = attackTime; }
+	public long getDamagedStart() { return damagedStart; }
+	public void setDamagedStart(long damagedStart) { this.damagedStart = damagedStart; }
 	
 	
 	//index : 0 : leftidle
