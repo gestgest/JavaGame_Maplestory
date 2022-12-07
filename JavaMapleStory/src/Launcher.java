@@ -18,6 +18,7 @@ public class Launcher {
 
 }
 
+//AppendText(name);
 //System.out.println("");
 //리스트형식 변수를 오브젝트에 보내지 마라 - 됐다 안됐다 그럼
 //ois.readObject() error

@@ -110,7 +110,7 @@ public class MapleStoryMsg implements Serializable {
 	}
 	
 	public User getUser() {
-		User user = new User(userName, type);
+		User user = new User(userName);
 		user.setX(x);
 		user.setY(y);
 		user.setImg(imageLeft, 0);

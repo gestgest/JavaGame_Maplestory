@@ -12,7 +12,8 @@ public class MapleStoryMsg implements Serializable {
 	private String data;
 	
 	private int x,y;
-	private ImageIcon img;
+	private int type; //직업타입
+	// 이미지를 안보내도 되지않을까 [이미지 타임만 보내면 되지 않을까]
 	//코드와 짜잘한 x,y와 같은 사소한 data값을 넣고 프로토콜로 분류한다
 
 	//100 [로그인]
@@ -22,7 +23,7 @@ public class MapleStoryMsg implements Serializable {
 	//102
 	//유저이름 프로토콜 y
 	//103
-	//유저이름 프로토콜 Idle이미지
+	//유저이름 프로토콜 x, y
 	//104
 	//유저이름 프로토콜 버퍼
 	//110
@@ -79,21 +80,15 @@ public class MapleStoryMsg implements Serializable {
 	public void setY(int y) { this.x = y; }
 	public int getKeybuff() { return keybuff; }
 	public void setKeybuff(int keybuff ) { this.keybuff = keybuff; }
+	public int getType() { return type; }
+	public void setType(int type ) { this.type = type; }
 	
 	//이미지
-	public ImageIcon getImg() {
-		return img;
-	}
-	
-	public void setImg(ImageIcon img) {
-		this.img = img;
-	}
 	
 	public void setUser(User user)
 	{
 		this.x = user.getX();
 		this.y = user.getY();
-		this.img = user.getImg();
 		this.keybuff = user.getKeybuff();
 	}
 	
@@ -101,7 +96,6 @@ public class MapleStoryMsg implements Serializable {
 		User user = new User(userName);
 		user.setX(x);
 		user.setY(y);
-		user.setImg(img);
 		user.setKeybuff(keybuff);
 		
 		return user;
