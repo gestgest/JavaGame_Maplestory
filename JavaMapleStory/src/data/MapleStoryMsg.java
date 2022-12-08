@@ -39,7 +39,7 @@ public class MapleStoryMsg implements Serializable {
 	//private boolean isAttack;
 	//private boolean isDamaged;
 	//110
-	//유저이름 프로토콜 유저정보
+	//유저이름 프로토콜 유저 이미지타입
 	
 
 	public MapleStoryMsg(String code) {
@@ -96,7 +96,7 @@ public class MapleStoryMsg implements Serializable {
 	public void setType(int type ) { this.type = type; }
 
 	public boolean getIsData() { return isData; }
-	public void setIIsData(boolean isData) { this.isData = isData; }
+	public void setIsData(boolean isData) { this.isData = isData; }
 	
 	//이미지
 	
