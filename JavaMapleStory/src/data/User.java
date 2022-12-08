@@ -60,7 +60,7 @@ public class User {
 	{
 		//Init함수로 처리하든 해야함 
 		this.isLeft = true;
-		this.isJump = true;
+		this.isJump = false;
 		this.isWalk = false;
 		this.isAttack = false;
 		this.walkStart = 0;
