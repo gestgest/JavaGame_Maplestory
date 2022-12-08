@@ -344,12 +344,20 @@ public class JavaObjServer extends JFrame {
 						//WriteAllObject(cm);
 						user.setX(cm.getX());
 						user.setY(cm.getY());
+						AppendText(user.getX() + " " + user.getY());
 						WriteOhtersObject(cm);
 						break;
 					case "104":
 						//이동 처리 함수
 						user.setKeybuff(cm.getKeybuff());
 						//WriteAllObject(cm);
+						break;
+					case "105":
+					case "106":
+					case "107":
+					case "108":
+					case "109":
+						WriteOhtersObject(cm);
 						break;
 					case "110":
 						//이동 처리 함수

@@ -9,6 +9,7 @@ public class MapleStoryMsg implements Serializable {
 	private String code; // 100:로그인, 400:로그아웃, 200:채팅메시지, 300:Image, player : 400
 	private int keybuff;
 	
+	private boolean isData;
 	private String data;
 	
 	private int x,y;
@@ -26,6 +27,17 @@ public class MapleStoryMsg implements Serializable {
 	//유저이름 프로토콜 x, y
 	//104
 	//유저이름 프로토콜 버퍼
+	//105
+	//106
+	//107
+	//108
+	//109
+	// bool : 
+	//private boolean isLeft;
+	//private boolean isJump;
+	//private boolean isWalk;
+	//private boolean isAttack;
+	//private boolean isDamaged;
 	//110
 	//유저이름 프로토콜 유저정보
 	
@@ -77,11 +89,14 @@ public class MapleStoryMsg implements Serializable {
 	public int getX() { return x; }
 	public int getY() { return y; }
 	public void setX(int x) { this.x = x; }
-	public void setY(int y) { this.x = y; }
+	public void setY(int y) { this.y = y; }
 	public int getKeybuff() { return keybuff; }
 	public void setKeybuff(int keybuff ) { this.keybuff = keybuff; }
 	public int getType() { return type; }
 	public void setType(int type ) { this.type = type; }
+
+	public boolean getIsData() { return isData; }
+	public void setIIsData(boolean isData) { this.isData = isData; }
 	
 	//이미지
 	

@@ -127,6 +127,7 @@ public class MapleStoryView extends JFrame {
 	private long spawnStart;
 	private boolean isSpawn = false;
 	private Clip clip;
+	private boolean isLogin = false;
 	
 	
 	
@@ -344,6 +345,10 @@ public class MapleStoryView extends JFrame {
 							adduser.setX(cm.getX());
 							adduser.setY(cm.getY());
 						}
+						else {
+							System.out.println("로그인");
+							isLogin = true;
+						}
 						break;
 					case "101":
 						//x
@@ -362,6 +367,27 @@ public class MapleStoryView extends JFrame {
 						adduser = users.get(cm.getName());
 						adduser.setX(cm.getX());
 						adduser.setY(cm.getY());
+						break;
+					case "105":
+						//is left
+						adduser = users.get(cm.getName());
+						adduser.setIsLeft(cm.getIsData());
+						break;
+					case "106":
+						adduser = users.get(cm.getName());
+						adduser.setIsJump(cm.getIsData());
+						break;
+					case "107":
+						adduser = users.get(cm.getName());
+						adduser.setIsWalk(cm.getIsData());
+						break;
+					case "108":
+						adduser = users.get(cm.getName());
+						adduser.setIsAttack(cm.getIsData());
+						break;
+					case "109":
+						adduser = users.get(cm.getName());
+						adduser.setIsDamaged(cm.getIsData());
 						break;
 					case "400":
 						//x,y
@@ -444,10 +470,27 @@ public class MapleStoryView extends JFrame {
 		} catch (IOException e) {
 			//서버오류
 			//클래스 단위로 보내지 마라
+
+			System.out.println(e.toString());
 			System.exit(0);
 		}
 	}
+	public void SendObjectbool(String code, String username, boolean bool) { // 서버로 메세지를 보내는 메소드
+		try {
+			MapleStoryMsg ob = new MapleStoryMsg(code);
+			ob.setName(username);
+			ob.setIIsData(bool);
+			
+			oos.writeObject(ob);
+		} catch (IOException e) {
+			//서버오류
+			//클래스 단위로 보내지 마라
 
+			System.out.println(e.toString());
+			System.exit(0);
+		}
+	}
+	
 	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? = 애니메이션 구현]
 	class FrameThread extends Thread{
 		@Override
@@ -457,12 +500,10 @@ public class MapleStoryView extends JFrame {
 				while(true){
 					pretime=System.currentTimeMillis();
 					
-					
 					contentPane.painthp();
 					gameScreen.repaint();//화면 리페인트
 					process();//각종 충돌 처리
 					keypross();//키 처리
-					
 
 					//프레임 유지
 					if(System.currentTimeMillis()-pretime < delay) 
@@ -769,7 +810,6 @@ public class MapleStoryView extends JFrame {
 				int y = user.getY() / 100;
 				Image img;
 
-				System.out.println("");
 
 				if(user.getIsAttack())
 				{
@@ -805,6 +845,7 @@ public class MapleStoryView extends JFrame {
 
 				int index = (int)user.getWalkTime();
 				index /= animationTime;
+
 				switch(user.getDegree()) {
 				case -1:
 					img = user.getImg(index + 2).getImage();
@@ -813,10 +854,13 @@ public class MapleStoryView extends JFrame {
 					img = user.getImg(index + 6).getImage();
 					break;
 				default:
-					if(user.getIsLeft())
+					if(user.getIsLeft()) {
+
 						img = user.getImg(0).getImage();
-					else
+					}
+					else {
 						img = user.getImg(1).getImage();
+					}
 					break;
 					
 				}
@@ -826,6 +870,7 @@ public class MapleStoryView extends JFrame {
 				int h = img.getHeight(myGamePanel);
 				
 				y = y - h;
+				//System.out.println("이름 : " + user.getName()+ " x : " + x + " y : " + y + " w : " + w + " h : " + h);
 				gc.drawImage(img,x,y,w,h,this);
 
 				
@@ -902,7 +947,6 @@ public class MapleStoryView extends JFrame {
 
 			boolean isWalk;
 			int keydown = e.getKeyCode();
-			MapleStoryMsg obcm = new MapleStoryMsg("103");
 			switch(keydown) {
 			//다중에 repaint가 아닌 오브젝트 보내기로 보낸다
 			//이후 오브젝트를 받으면 그때 repaint를 해야한다
@@ -919,12 +963,17 @@ public class MapleStoryView extends JFrame {
 				}
 				//send?
 
-				
-				obcm.setName(user.getName());
-				obcm.setX(user.getX());
-				obcm.setY(user.getY());
-				
-				SendObject(obcm);
+				if(isLogin) {
+
+					MapleStoryMsg obcm = new MapleStoryMsg("103");
+					obcm.setName(user.getName());
+					obcm.setX(user.getX());
+					obcm.setY(user.getY());
+					
+					SendObject(obcm);
+					SendObjectbool("105", user.getName(), user.getIsLeft());
+					SendObjectbool("107", user.getName(), user.getIsWalk());
+				}
 				break;
 			case KeyEvent.VK_RIGHT:
 				user.setKeybuff(user.getKeybuff()|RIGHT_PRESSED);//멀티키의 누르기 처리
@@ -936,12 +985,17 @@ public class MapleStoryView extends JFrame {
 					user.setIsWalk(isWalk);
 				}
 				//send?
-				
-				obcm.setName(user.getName());
-				obcm.setX(user.getX());
-				obcm.setY(user.getY());
-				
-				SendObject(obcm);
+				if(isLogin) {
+
+					MapleStoryMsg obcm = new MapleStoryMsg("103");
+					obcm.setName(user.getName());
+					obcm.setX(user.getX());
+					obcm.setY(user.getY());
+					
+					SendObject(obcm);
+					SendObjectbool("105", user.getName(), user.getIsLeft());
+					SendObjectbool("107", user.getName(), user.getIsWalk());
+				}
 				
 				break;
 			case KeyEvent.VK_UP:

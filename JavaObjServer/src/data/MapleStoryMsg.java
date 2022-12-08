@@ -1,35 +1,45 @@
 package data;
-// ChatMsg.java ì±„íŒ… ë©”ì‹œì§€ ObjectStream ìš©.
+// ChatMsg.java Ã¤ÆÃ ¸Ş½ÃÁö ObjectStream ¿ë.
 import java.io.Serializable;
 import javax.swing.ImageIcon;
 
 public class MapleStoryMsg implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String userName;
-	private String code; // 100:ë¡œê·¸ì¸, 400:ë¡œê·¸ì•„ì›ƒ, 200:ì±„íŒ…ë©”ì‹œì§€, 300:Image, player : 400
+	private String code; // 100:·Î±×ÀÎ, 400:·Î±×¾Æ¿ô, 200:Ã¤ÆÃ¸Ş½ÃÁö, 300:Image, player : 400
 	private int keybuff;
 	
+	private boolean isData;
 	private String data;
 	
 	private int x,y;
-	private int type; //ì§ì—…íƒ€ì…
-	// ì´ë¯¸ì§€ë¥¼ ì•ˆë³´ë‚´ë„ ë˜ì§€ì•Šì„ê¹Œ [ì´ë¯¸ì§€ íƒ€ì„ë§Œ ë³´ë‚´ë©´ ë˜ì§€ ì•Šì„ê¹Œ]
-	private ImageIcon imageLeft;
-	private ImageIcon imageRight;
-	//ì½”ë“œì™€ ì§œì˜í•œ x,yì™€ ê°™ì€ ì‚¬ì†Œí•œ dataê°’ì„ ë„£ê³  í”„ë¡œí† ì½œë¡œ ë¶„ë¥˜í•œë‹¤
+	private int type; //Á÷¾÷Å¸ÀÔ
+	// ÀÌ¹ÌÁö¸¦ ¾Èº¸³»µµ µÇÁö¾ÊÀ»±î [ÀÌ¹ÌÁö Å¸ÀÓ¸¸ º¸³»¸é µÇÁö ¾ÊÀ»±î]
+	//ÄÚµå¿Í Â¥ÀßÇÑ x,y¿Í °°Àº »ç¼ÒÇÑ data°ªÀ» ³Ö°í ÇÁ·ÎÅäÄİ·Î ºĞ·ùÇÑ´Ù
 
-	//100 [ë¡œê·¸ì¸]
-	//ìœ ì €ì´ë¦„ í”„ë¡œí† ì½œ ìœ ì €ì •ë³´
+	//100 [·Î±×ÀÎ]
+	//À¯ÀúÀÌ¸§ ÇÁ·ÎÅäÄİ À¯ÀúÁ¤º¸
 	//101
-	//ìœ ì €ì´ë¦„ í”„ë¡œí† ì½œ x
+	//À¯ÀúÀÌ¸§ ÇÁ·ÎÅäÄİ x
 	//102
-	//ìœ ì €ì´ë¦„ í”„ë¡œí† ì½œ y
+	//À¯ÀúÀÌ¸§ ÇÁ·ÎÅäÄİ y
 	//103
-	//ìœ ì €ì´ë¦„ í”„ë¡œí† ì½œ Idleì´ë¯¸ì§€
+	//À¯ÀúÀÌ¸§ ÇÁ·ÎÅäÄİ x, y
 	//104
-	//ìœ ì €ì´ë¦„ í”„ë¡œí† ì½œ ë²„í¼
+	//À¯ÀúÀÌ¸§ ÇÁ·ÎÅäÄİ ¹öÆÛ
+	//105
+	//106
+	//107
+	//108
+	//109
+	// bool : 
+	//private boolean isLeft;
+	//private boolean isJump;
+	//private boolean isWalk;
+	//private boolean isAttack;
+	//private boolean isDamaged;
 	//110
-	//ìœ ì €ì´ë¦„ í”„ë¡œí† ì½œ ìœ ì €ì •ë³´
+	//À¯ÀúÀÌ¸§ ÇÁ·ÎÅäÄİ À¯ÀúÁ¤º¸
 	
 
 	public MapleStoryMsg(String code) {
@@ -37,7 +47,7 @@ public class MapleStoryMsg implements Serializable {
 	}
 
 	/////////////////////////////////////
-	//í”„ë¡œí† ì½œ ì½”ë“œ
+	//ÇÁ·ÎÅäÄİ ÄÚµå
 	public String getCode() {
 		return code;
 	}
@@ -50,7 +60,7 @@ public class MapleStoryMsg implements Serializable {
 
 	
 	/////////////////////////////////////
-	//ë‹‰ë„¤ì„
+	//´Ğ³×ÀÓ
 	public String getName() {
 		return userName;
 	}
@@ -60,7 +70,7 @@ public class MapleStoryMsg implements Serializable {
 
 	
 	/////////////////////////////////////
-	//ë°ì´í„°
+	//µ¥ÀÌÅÍ
 	public String getData() {
 		return data;
 	}
@@ -75,37 +85,25 @@ public class MapleStoryMsg implements Serializable {
 	
 
 	/////////////////////////////////////
-	//ìœ ì €
+	//À¯Àú
 	public int getX() { return x; }
 	public int getY() { return y; }
 	public void setX(int x) { this.x = x; }
-	public void setY(int y) { this.x = y; }
+	public void setY(int y) { this.y = y; }
 	public int getKeybuff() { return keybuff; }
 	public void setKeybuff(int keybuff ) { this.keybuff = keybuff; }
 	public int getType() { return type; }
 	public void setType(int type ) { this.type = type; }
+
+	public boolean getIsData() { return isData; }
+	public void setIIsData(boolean isData) { this.isData = isData; }
 	
-	//ì´ë¯¸ì§€
-	public ImageIcon getImg(int index) {
-		if(index == 1)
-			return imageRight;
-		else
-			return imageLeft;
-	}
-	
-	public void setImg(ImageIcon image, int index) {
-		if(index == 1)
-			this.imageRight = image;
-		else
-			this.imageLeft = image;
-	}
+	//ÀÌ¹ÌÁö
 	
 	public void setUser(User user)
 	{
 		this.x = user.getX();
 		this.y = user.getY();
-		this.imageLeft = user.getImg(0);
-		this.imageRight = user.getImg(1);
 		this.keybuff = user.getKeybuff();
 	}
 	
@@ -113,8 +111,6 @@ public class MapleStoryMsg implements Serializable {
 		User user = new User(userName);
 		user.setX(x);
 		user.setY(y);
-		user.setImg(imageLeft, 0);
-		user.setImg(imageRight, 1);
 		user.setKeybuff(keybuff);
 		
 		return user;
