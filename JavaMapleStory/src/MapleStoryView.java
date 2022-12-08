@@ -203,8 +203,8 @@ public class MapleStoryView extends JFrame {
 
 			FrameThread frameThread = new FrameThread();
 			frameThread.start();
-			//SendThread sendThread = new SendThread();
-			//sendThread.start();
+			SendThread sendThread = new SendThread();
+			sendThread.start();
 			
 		} catch (NumberFormatException | IOException e) {
 			//TODO Auto-generated catch block
@@ -993,9 +993,17 @@ public class MapleStoryView extends JFrame {
 
 					
 					//프레임 유지
-					if(System.currentTimeMillis()-pretime < 150) {
-						Thread.sleep(150 - System.currentTimeMillis()+pretime);
+					if(System.currentTimeMillis()-pretime < 30) {
+						Thread.sleep(30 - System.currentTimeMillis()+pretime);
 						SendObjectType("110", user.getName(), user.getType());
+						
+
+						MapleStoryMsg obcm = new MapleStoryMsg("103");
+						obcm.setName(user.getName());
+						obcm.setX(user.getX());
+						obcm.setY(user.getY());
+						
+						SendObject(obcm);
 						
 						
 						
@@ -1042,7 +1050,7 @@ public class MapleStoryView extends JFrame {
 					obcm.setX(user.getX());
 					obcm.setY(user.getY());
 					
-					SendObject(obcm);
+					//SendObject(obcm);
 				}
 				break;
 			case KeyEvent.VK_RIGHT:
@@ -1062,7 +1070,7 @@ public class MapleStoryView extends JFrame {
 					obcm.setX(user.getX());
 					obcm.setY(user.getY());
 					
-					SendObject(obcm);
+					//SendObject(obcm);
 				}
 				
 				break;
@@ -1131,12 +1139,12 @@ public class MapleStoryView extends JFrame {
 					obcm.setX(user.getX());
 					obcm.setY(user.getY());
 					
-					SendObject(obcm);
+					//SendObject(obcm);
 				}
 				break;
 			}
 
-			SendObjectType("110", user.getName(), user.getType());
+			//SendObjectType("110", user.getName(), user.getType());
 		}
 		
 		@Override
@@ -1156,7 +1164,7 @@ public class MapleStoryView extends JFrame {
 				break;
 			}
 
-			SendObjectType("110", user.getName(), user.getType());
+			//SendObjectType("110", user.getName(), user.getType());
 		}
 	}
 	
