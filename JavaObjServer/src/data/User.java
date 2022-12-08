@@ -6,16 +6,16 @@ public class User {
 	private String name;
 
 	private int hp;
-	private int x,y; //ì‹¤ì œë¡  10000, 10000 => 100,100
-	//ì—¬ëŸ¬ê°œì˜ ì´ë¯¸ì§€
-	// ì™¼ìª½0
-	// ì˜¤ë¥¸ìª½1
-	// ì™¼ìª½ ê±·ê¸° 2 3 4 5
-	// ì˜¤ë¥¸ìª½ ê±·ê¸° 6 7 8 9
-	// ì™¼ ì©œ 10
-	// ì˜¤ë¥¸ ì©œ 11
-	// ì™¼ ê³µ 12 13 14
-	// ì˜¤ë¥¸ ê³µ 15 16 17
+	private int x,y; //½ÇÁ¦·Ğ 10000, 10000 => 100,100
+	//¿©·¯°³ÀÇ ÀÌ¹ÌÁö
+	// ¿ŞÂÊ0
+	// ¿À¸¥ÂÊ1
+	// ¿ŞÂÊ °È±â 2 3 4 5
+	// ¿À¸¥ÂÊ °È±â 6 7 8 9
+	// ¿Ş ÂÀ 10
+	// ¿À¸¥ ÂÀ 11
+	// ¿Ş °ø 12 13 14
+	// ¿À¸¥ °ø 15 16 17
 	private ImageIcon image[];
 	private int keybuff;
 	private int degree;
@@ -31,25 +31,23 @@ public class User {
 	private long attackTime;
 	private long damagedStart;
 	private int velocity;
+	private int type;
 	
 	
-	//ì—†ì•¨ ë‚´ìš© [ë¡œê·¸ì¸ì„ ì²˜ìŒ í–ˆë‹¤ë©´]
-	public User(String name,int type, int x, int y, ImageIcon image[])
+	//¾ø¾Ù ³»¿ë [·Î±×ÀÎÀ» Ã³À½ Çß´Ù¸é]
+	public User(String name,int type, int x, int y)
 	{
 		this.name = name;
 		this.x = x;
 		this.y = y;
+		this.type = type;
 		
-		this.image = new ImageIcon[image.length];
-		for(int i = 0; i < image.length; i++)
-		{
-			this.image[i] = image[i];
-		}
 		init_User();
 	}
 	public User(String username)
 	{
 		this.name = username;
+		init_User();
 	}
 	
 	public User(User user)
@@ -57,17 +55,14 @@ public class User {
 		this.name = user.name;
 		this.x = user.x;
 		this.y = user.y;
-		for(int i = 0; i < user.image.length; i++)
-		{
-			this.image[i] = user.getImg(i);
-		}
+		
 	}
 	
 	private void init_User()
 	{
-		//Inití•¨ìˆ˜ë¡œ ì²˜ë¦¬í•˜ë“  í•´ì•¼í•¨ 
+		//InitÇÔ¼ö·Î Ã³¸®ÇÏµç ÇØ¾ßÇÔ 
 		this.isLeft = true;
-		this.isJump = true;
+		this.isJump = false;
 		this.isWalk = false;
 		this.isAttack = false;
 		this.walkStart = 0;
@@ -76,6 +71,37 @@ public class User {
 		this.keybuff = 0;
 		this.degree = 0;
 		this.hp = 100;
+		
+
+		int i = 0;
+		ImageIcon [][] userImageIcons = new ImageIcon[3][];
+		
+		userImageIcons[i] = new ImageIcon[18];
+		userImageIcons[i][0] = new ImageIcon("src/res/img/character/warrior/IdleLeft.png");
+		userImageIcons[i][1] = new ImageIcon("src/res/img/character/warrior/IdleRight.png");
+		userImageIcons[i][2] = new ImageIcon("src/res/img/character/warrior/WalkLeft1.png");
+		userImageIcons[i][3] = new ImageIcon("src/res/img/character/warrior/WalkLeft2.png");
+		userImageIcons[i][4] = new ImageIcon("src/res/img/character/warrior/WalkLeft3.png");
+		userImageIcons[i][5] = new ImageIcon("src/res/img/character/warrior/WalkLeft4.png");
+		userImageIcons[i][6] = new ImageIcon("src/res/img/character/warrior/WalkRight1.png");
+		userImageIcons[i][7] = new ImageIcon("src/res/img/character/warrior/WalkRight2.png");
+		userImageIcons[i][8] = new ImageIcon("src/res/img/character/warrior/WalkRight3.png");
+		userImageIcons[i][9] = new ImageIcon("src/res/img/character/warrior/WalkRight4.png");
+		userImageIcons[i][10] = new ImageIcon("src/res/img/character/warrior/JumpLeft.png");
+		userImageIcons[i][11] = new ImageIcon("src/res/img/character/warrior/JumpRight.png");
+		userImageIcons[i][12] = new ImageIcon("src/res/img/character/warrior/AttackLeft1.png");
+		userImageIcons[i][13] = new ImageIcon("src/res/img/character/warrior/AttackLeft2.png");
+		userImageIcons[i][14] = new ImageIcon("src/res/img/character/warrior/AttackLeft3.png");
+		userImageIcons[i][15] = new ImageIcon("src/res/img/character/warrior/AttackRight1.png");
+		userImageIcons[i][16] = new ImageIcon("src/res/img/character/warrior/AttackRight2.png");
+		userImageIcons[i][17] = new ImageIcon("src/res/img/character/warrior/AttackRight3.png");
+		
+
+		this.image = new ImageIcon[18];
+		for(i = 0; i < 18; i++)
+		{
+			this.image[i] = userImageIcons[0][i];
+		}
 		
 	}
 
@@ -93,6 +119,8 @@ public class User {
 	public void setKeybuff(int keybuff) { this.keybuff = keybuff; }
 	public int getHP() { return hp; }
 	public void setHP(int hp) { this.hp = hp; }
+	public int getType() { return type; }
+	public void setType(int type) { this.type = type; }
 
 	public int getDegree() { return degree; }
 	public void setDegree(int degree) { this.degree = degree; }
@@ -139,12 +167,12 @@ public class User {
 		this.image[index] = image;
 	}
 	
-	//ì§ì—…
+	//Á÷¾÷
 	
 	//hp
-	//ë§ˆë‚˜
-	//ê²½í—˜ì¹˜
-	//ê³µê²©ë ¥
+	//¸¶³ª
+	//°æÇèÄ¡
+	//°ø°İ·Â
 	//
 	
 	

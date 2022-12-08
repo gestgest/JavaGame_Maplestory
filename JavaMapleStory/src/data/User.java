@@ -31,6 +31,7 @@ public class User {
 	private long attackTime;
 	private long damagedStart;
 	private int velocity;
+	private int type;
 	
 	
 	//없앨 내용 [로그인을 처음 했다면]
@@ -39,6 +40,7 @@ public class User {
 		this.name = name;
 		this.x = x;
 		this.y = y;
+		this.type = type;
 		
 		init_User();
 	}
@@ -117,6 +119,8 @@ public class User {
 	public void setKeybuff(int keybuff) { this.keybuff = keybuff; }
 	public int getHP() { return hp; }
 	public void setHP(int hp) { this.hp = hp; }
+	public int getType() { return type; }
+	public void setType(int type) { this.type = type; }
 
 	public int getDegree() { return degree; }
 	public void setDegree(int degree) { this.degree = degree; }

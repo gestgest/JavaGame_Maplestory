@@ -128,6 +128,7 @@ public class MapleStoryView extends JFrame {
 	private boolean isSpawn = false;
 	private Clip clip;
 	private boolean isLogin = false;
+	private boolean isSend = false;
 	
 	
 	
@@ -199,16 +200,16 @@ public class MapleStoryView extends JFrame {
 			ListenNetwork net = new ListenNetwork();
 			net.start();
 
-			
+
 			FrameThread frameThread = new FrameThread();
 			frameThread.start();
+			//SendThread sendThread = new SendThread();
+			//sendThread.start();
+			
 		} catch (NumberFormatException | IOException e) {
 			//TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		FrameThread frameThread = new FrameThread();
-		frameThread.start();
 		
 
 		setFocusable(true);
@@ -322,7 +323,7 @@ public class MapleStoryView extends JFrame {
 						obcm = ois.readObject();
 					} catch (ClassNotFoundException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						System.out.println("입력 클래스 오류 : "+e.toString());
 						break;
 					}
 					if (obcm == null)
@@ -389,6 +390,10 @@ public class MapleStoryView extends JFrame {
 						adduser = users.get(cm.getName());
 						adduser.setIsDamaged(cm.getIsData());
 						break;
+					case "110":
+						adduser = users.get(cm.getName());
+						adduser.setType(cm.getType());
+						break;
 					case "400":
 						//x,y
 						users.remove(cm.getName());
@@ -398,7 +403,7 @@ public class MapleStoryView extends JFrame {
 					}
 					
 				} catch (IOException e) {
-					//에러 메세지 AppendText("ois.readObject() error");
+					System.out.println("입력 오류 : "+e.toString());
 					try {
 //						dos.close();
 //						dis.close();
@@ -465,8 +470,15 @@ public class MapleStoryView extends JFrame {
 
 	public void SendObject(Object ob) { // 서버로 메세지를 보내는 메소드
 		try {
-			
-			oos.writeObject(ob);
+
+			if(!isSend) {
+				isSend = true;
+				oos.writeObject(ob);
+				isSend = false;
+			}
+			else {
+				return;
+			}
 		} catch (IOException e) {
 			//서버오류
 			//클래스 단위로 보내지 마라
@@ -477,11 +489,41 @@ public class MapleStoryView extends JFrame {
 	}
 	public void SendObjectbool(String code, String username, boolean bool) { // 서버로 메세지를 보내는 메소드
 		try {
-			MapleStoryMsg ob = new MapleStoryMsg(code);
-			ob.setName(username);
-			ob.setIIsData(bool);
+
+			if(!isSend) {
+				isSend = true;
+				MapleStoryMsg ob = new MapleStoryMsg(code);
+				ob.setName(username);
+				ob.setIsData(bool);
+				isSend = false;
+				oos.writeObject(ob);
+			}
+			else {
+				return;
+			}
 			
-			oos.writeObject(ob);
+		} catch (IOException e) {
+			//서버오류
+			//클래스 단위로 보내지 마라
+
+			System.out.println(e.toString());
+			System.exit(0);
+		}
+	}
+	public void SendObjectType(String code, String username, int type) { // 서버로 메세지를 보내는 메소드
+		try {
+			if(!isSend) {
+				isSend = true;
+				MapleStoryMsg ob = new MapleStoryMsg(code);
+				ob.setName(username);
+				ob.setType(type);
+				oos.writeObject(ob);
+				isSend = false;
+			}
+			else {
+				return;
+			}
+			
 		} catch (IOException e) {
 			//서버오류
 			//클래스 단위로 보내지 마라
@@ -493,6 +535,7 @@ public class MapleStoryView extends JFrame {
 	
 	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? = 애니메이션 구현]
 	class FrameThread extends Thread{
+		int count = 0;
 		@Override
 		public void run(){
 			try
@@ -505,16 +548,22 @@ public class MapleStoryView extends JFrame {
 					process();//각종 충돌 처리
 					keypross();//키 처리
 
+					
 					//프레임 유지
-					if(System.currentTimeMillis()-pretime < delay) 
+					if(System.currentTimeMillis()-pretime < delay) {
 						Thread.sleep(delay - System.currentTimeMillis()+pretime);
+						
+						
+						
+					}
 						//게임 루프를 처리하는데 걸린 시간을 체크해서 딜레이값에서 차감하여 딜레이를 일정하게 유지한다.
 						//루프 실행 시간이 딜레이 시간보다 크다면 게임 속도가 느려지게 된다.
 				}
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				
+				System.out.println(e.toString());
 			}
 		}
 		
@@ -798,9 +847,56 @@ public class MapleStoryView extends JFrame {
 				gc.drawImage(maptile,i * 50,500,50,50,this);//배경
 		}
 		
+		//이미지 index 설정
+		private void settype() {
+			if(user.getIsAttack())
+			{
+				int index = (int)user.getAttackTime();
+				index /= ATTACK_TIME;
+				
+				if(user.getIsLeft())
+					user.setType(index + 12);
+				else
+					user.setType(index + 15);
+				return;
+			}
+			
+			if(user.getIsJump())
+			{
+				if(user.getIsLeft())
+					user.setType(10);
+				else
+					user.setType(11);
+				return;
+			}
+
+
+			int index = (int)user.getWalkTime();
+			index /= animationTime;
+
+			switch(user.getDegree()) {
+			case -1:
+				user.setType(index + 2);
+				break;
+			case 1:
+				user.setType(index + 6);
+				break;
+			default:
+				if(user.getIsLeft()) {
+
+					user.setType(0);
+				}
+				else {
+					user.setType(1);
+				}
+				break;
+				
+			}
+		}
+		
 		private void drawUser()
 		{
-			
+			settype();
 			Iterator<String> keys = users.keySet().iterator();
 			while(keys.hasNext())
 			{
@@ -810,60 +906,7 @@ public class MapleStoryView extends JFrame {
 				int y = user.getY() / 100;
 				Image img;
 
-
-				if(user.getIsAttack())
-				{
-					int index = (int)user.getAttackTime();
-					index /= ATTACK_TIME;
-					
-					if(user.getIsLeft())
-						img = user.getImg(index + 12).getImage();
-					else
-						img = user.getImg(index + 15).getImage();
-					int w = img.getWidth(myGamePanel);
-					int h = img.getHeight(myGamePanel);
-					
-					y = y - h;
-					gc.drawImage(img,x,y,w,h,this);
-					continue;
-				}
-				
-				if(user.getIsJump())
-				{
-					if(user.getIsLeft())
-						img = user.getImg(10).getImage();
-					else
-						img = user.getImg(11).getImage();
-					int w = img.getWidth(myGamePanel);
-					int h = img.getHeight(myGamePanel);
-					
-					y = y - h;
-					gc.drawImage(img,x,y,w,h,this);
-					continue;
-				}
-
-
-				int index = (int)user.getWalkTime();
-				index /= animationTime;
-
-				switch(user.getDegree()) {
-				case -1:
-					img = user.getImg(index + 2).getImage();
-					break;
-				case 1:
-					img = user.getImg(index + 6).getImage();
-					break;
-				default:
-					if(user.getIsLeft()) {
-
-						img = user.getImg(0).getImage();
-					}
-					else {
-						img = user.getImg(1).getImage();
-					}
-					break;
-					
-				}
+				img = user.getImg(user.getType()).getImage();
 
 				
 				int w = img.getWidth(myGamePanel);
@@ -940,6 +983,35 @@ public class MapleStoryView extends JFrame {
 		
 	}
 	
+	class SendThread extends Thread{
+		int count = 0;
+		@Override
+		public void run(){
+			try
+			{
+				while(true){
+
+					
+					//프레임 유지
+					if(System.currentTimeMillis()-pretime < 150) {
+						Thread.sleep(150 - System.currentTimeMillis()+pretime);
+						SendObjectType("110", user.getName(), user.getType());
+						
+						
+						
+					}
+						//게임 루프를 처리하는데 걸린 시간을 체크해서 딜레이값에서 차감하여 딜레이를 일정하게 유지한다.
+						//루프 실행 시간이 딜레이 시간보다 크다면 게임 속도가 느려지게 된다.
+				}
+			}
+			catch (Exception e)
+			{
+				
+				System.out.println(e.toString());
+			}
+		}
+	}
+	
 	private class KeyEventEx extends KeyAdapter{
 		@Override
 		public void keyPressed(KeyEvent e)
@@ -971,8 +1043,6 @@ public class MapleStoryView extends JFrame {
 					obcm.setY(user.getY());
 					
 					SendObject(obcm);
-					SendObjectbool("105", user.getName(), user.getIsLeft());
-					SendObjectbool("107", user.getName(), user.getIsWalk());
 				}
 				break;
 			case KeyEvent.VK_RIGHT:
@@ -993,8 +1063,6 @@ public class MapleStoryView extends JFrame {
 					obcm.setY(user.getY());
 					
 					SendObject(obcm);
-					SendObjectbool("105", user.getName(), user.getIsLeft());
-					SendObjectbool("107", user.getName(), user.getIsWalk());
 				}
 				
 				break;
@@ -1056,8 +1124,19 @@ public class MapleStoryView extends JFrame {
 					user.setVelocity(velocity);
 					user.setIsJump(isJump);
 				}
+				if(isLogin) {
+
+					MapleStoryMsg obcm = new MapleStoryMsg("103");
+					obcm.setName(user.getName());
+					obcm.setX(user.getX());
+					obcm.setY(user.getY());
+					
+					SendObject(obcm);
+				}
 				break;
 			}
+
+			SendObjectType("110", user.getName(), user.getType());
 		}
 		
 		@Override
@@ -1076,6 +1155,8 @@ public class MapleStoryView extends JFrame {
 				user.setWalkTime(0);
 				break;
 			}
+
+			SendObjectType("110", user.getName(), user.getType());
 		}
 	}
 	

@@ -360,8 +360,7 @@ public class JavaObjServer extends JFrame {
 						WriteOhtersObject(cm);
 						break;
 					case "110":
-						//이동 처리 함수
-						//WriteAllObject(cm);
+						WriteOhtersObject(cm);
 						break;
 					}
 					
