@@ -324,18 +324,27 @@ public class JavaObjServer extends JFrame {
 					//login
 					switch(cm.getCode()) {
 					case "100":
+
 						user = new User(cm.getName());
 						user.setX(cm.getX());
 						user.setY(cm.getY());
-						user.setImg(cm.getImg());
+						//user.setImg(cm.getImg());
 						user.setKeybuff(cm.getKeybuff());
 						Login();
 						break;
 					case "101":
+						//AppendText("데이터 : "+cm.getY());
+						user.setX(cm.getX());
+						break;
 					case "102":
 						//AppendText("데이터 : "+cm.getY());
+						user.setY(cm.getY());
+						break;
 					case "103":
 						//WriteAllObject(cm);
+						user.setX(cm.getX());
+						user.setY(cm.getY());
+						WriteOhtersObject(cm);
 						break;
 					case "104":
 						//이동 처리 함수
@@ -383,33 +392,46 @@ public class JavaObjServer extends JFrame {
 			msg.setName(user.getName());
 			msg.setX(user.getX());
 			msg.setY(user.getY());
-			msg.setImg(user.getImg());
+			///msg.setImg(user.getImg());
 			
 			//user_vc.elementAt(ABORT)
 			
 			//정보 넣기
 			WriteAllObject(msg);
 			
-			for(int i = 0; i < user_vc.size(); i++)
+			//다른 유저도 정보 넣기
+			for(int i = 0 ; i < user_vc.size(); i++)
 			{
-				if(!user.getName().equals(user_vc.get(i).user.getName()))
-				{
-					AppendText("보내는 정보 이름 : " + user.getName());
-					MapleStoryMsg msg1 = new MapleStoryMsg("100");
-					msg1.setUser(user_vc.get(i).user);
-					WriteOneObject(msg1);
-				}
-					
+				//무조건 메세지는 재탕하면 안된다
+				MapleStoryMsg msg1 = new MapleStoryMsg("100");
+				User searchuser = user_vc.get(i).getUser();
+				
+				msg1.setName(searchuser.getName());
+				msg1.setX(searchuser.getX());
+				msg1.setY(searchuser.getY());
+				
+				
+				WriteOneObject(msg1);
 			}
+
+			
 			
 			//
 		}
 
 		public void Logout() {
 			//여기가 문제
-			String msg = "[" + user.getName() + "]님이 퇴장 하였습니다.\n";
+			String msg;
+			if(user.getName() == null) {
+				msg = "누군가 퇴장했지만 이름이 null입니다\n";
+			}
+			else
+				msg = "[" + user.getName() + "]님이 퇴장 하였습니다.\n";
+			MapleStoryMsg msg1 = new MapleStoryMsg("400");
+			msg1.setName(user.getName());
+			
 			UserVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
-			//WriteAll(msg); // 나를 제외한 다른 User들에게 전송
+			WriteAllObject(msg1); // 나를 제외한 다른 User들에게 전송
 			AppendText("사용자 " + "[" + user.getName() + "] 퇴장. 현재 참가자 수 " + UserVec.size());
 		}
 
@@ -422,7 +444,6 @@ public class JavaObjServer extends JFrame {
 		
 		// 모든 User들에게 Object를 방송. 채팅 message와 image object를 보낼 수 있다
 		public void WriteAllObject(Object ob) {
-			
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
 				user.WriteOneObject(ob);
@@ -434,6 +455,14 @@ public class JavaObjServer extends JFrame {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
 				user.WriteOne(str);
+			}
+		}
+		public void WriteOhtersObject(Object ob) {
+			for (int i = 0; i < user_vc.size(); i++) {
+				
+				UserService user = (UserService) user_vc.elementAt(i);
+				if(!user.getUser().getName().equals(this.user.getName()))
+					user.WriteOneObject(ob);
 			}
 		}
 

@@ -113,7 +113,7 @@ public class MapleStoryView extends JFrame {
 	private final int jumpA = 100; //점프 가속도
 	private final int animationTime = 125;
 	private final int ATTACK_TIME = 250;
-	private final int RESPAWN_TIME = 3000;
+	private final int RESPAWN_TIME = 15000;
 	private final int MAX_MONSTER_COUNT = 5; //최대 슬라임 개수
 	
 	
@@ -196,50 +196,13 @@ public class MapleStoryView extends JFrame {
 	//유저 
 	private void init_user(String username)
 	{
-		int i = 0;
-		ImageIcon [][] userImageIcons = new ImageIcon[3][];
 		
-		userImageIcons[i] = new ImageIcon[18];
-		userImageIcons[i][0] = new ImageIcon("src/res/img/character/warrior/IdleLeft.png");
-		userImageIcons[i][1] = new ImageIcon("src/res/img/character/warrior/IdleRight.png");
-		userImageIcons[i][2] = new ImageIcon("src/res/img/character/warrior/WalkLeft1.png");
-		userImageIcons[i][3] = new ImageIcon("src/res/img/character/warrior/WalkLeft2.png");
-		userImageIcons[i][4] = new ImageIcon("src/res/img/character/warrior/WalkLeft3.png");
-		userImageIcons[i][5] = new ImageIcon("src/res/img/character/warrior/WalkLeft4.png");
-		userImageIcons[i][6] = new ImageIcon("src/res/img/character/warrior/WalkRight1.png");
-		userImageIcons[i][7] = new ImageIcon("src/res/img/character/warrior/WalkRight2.png");
-		userImageIcons[i][8] = new ImageIcon("src/res/img/character/warrior/WalkRight3.png");
-		userImageIcons[i][9] = new ImageIcon("src/res/img/character/warrior/WalkRight4.png");
-		userImageIcons[i][10] = new ImageIcon("src/res/img/character/warrior/JumpLeft.png");
-		userImageIcons[i][11] = new ImageIcon("src/res/img/character/warrior/JumpRight.png");
-		userImageIcons[i][12] = new ImageIcon("src/res/img/character/warrior/AttackLeft1.png");
-		userImageIcons[i][13] = new ImageIcon("src/res/img/character/warrior/AttackLeft2.png");
-		userImageIcons[i][14] = new ImageIcon("src/res/img/character/warrior/AttackLeft3.png");
-		userImageIcons[i][15] = new ImageIcon("src/res/img/character/warrior/AttackRight1.png");
-		userImageIcons[i][16] = new ImageIcon("src/res/img/character/warrior/AttackRight2.png");
-		userImageIcons[i][17] = new ImageIcon("src/res/img/character/warrior/AttackRight3.png");
-		
-		
-		i++;
-		userImageIcons[i] = new ImageIcon[12];
-		userImageIcons[i][0] = new ImageIcon("src/res/img/character/maze/IdleLeft.png");
-		userImageIcons[i][1] = new ImageIcon("src/res/img/character/maze/IdleRight.png");
-		userImageIcons[i][2] = new ImageIcon("src/res/img/character/maze/WalkLeft1.png");
-		userImageIcons[i][3] = new ImageIcon("src/res/img/character/maze/WalkLeft2.png");
-		userImageIcons[i][4] = new ImageIcon("src/res/img/character/maze/WalkLeft3.png");
-		userImageIcons[i][5] = new ImageIcon("src/res/img/character/maze/WalkLeft4.png");
-		userImageIcons[i][6] = new ImageIcon("src/res/img/character/maze/WalkRight1.png");
-		userImageIcons[i][7] = new ImageIcon("src/res/img/character/maze/WalkRight2.png");
-		userImageIcons[i][8] = new ImageIcon("src/res/img/character/maze/WalkRight3.png");
-		userImageIcons[i][9] = new ImageIcon("src/res/img/character/maze/WalkRight4.png");
-		userImageIcons[i][10] = new ImageIcon("src/res/img/character/maze/JumpLeft.png");
-		userImageIcons[i][11] = new ImageIcon("src/res/img/character/maze/JumpRight.png");
 		
 		
 		// 추가
 		
 		//전사 법사 궁수
-		user = new User(username,0,0,0,userImageIcons[0]);
+		user = new User(username,0,0,0);
 		
 		
 		user.setDegree(0);
@@ -355,7 +318,7 @@ public class MapleStoryView extends JFrame {
 					//로그인
 					case "100":
 						//닉네임
-						users.put(cm.getName(), new User( cm.getName(), cm.getType() ));
+						users.put(cm.getName(), new User( cm.getName() ));
 						user = users.get(cm.getName());
 						user.setX(cm.getX());
 						user.setY(cm.getY());
@@ -463,6 +426,7 @@ public class MapleStoryView extends JFrame {
 
 	//중력 : 나중에 네트워크 스레드에 추가 [사실 클라 시간 스레드는 필요없지 않을까? = 애니메이션 구현]
 	class FrameThread extends Thread{
+		int count = 0;
 		@Override
 		public void run(){
 			try
@@ -514,8 +478,10 @@ public class MapleStoryView extends JFrame {
 
 
 			//경계선
-			if(x < 0)
+			if(x < 0) {
 				x = 0;
+				System.out.println(x);
+			}
 			else if(width * 100 - 4600 < x)
 				x = width * 100 - 4600;
 			
@@ -589,7 +555,7 @@ public class MapleStoryView extends JFrame {
 		
 		private void damagedProcess() {
 			int w = user.getImg(0).getIconWidth();
-			w *= 90;
+			w *= 70;
 			for(int i = 0; i < monsters.size(); i++) {
 				Monster monster = monsters.get(i);
 				
@@ -604,7 +570,7 @@ public class MapleStoryView extends JFrame {
 					user.setDamagedStart(pretime);
 				}
 				//몬스터가 왼쪽
-				else if(0 <= user.getX() - monster.getX()&& user.getX() - monster.getX()  <= w && !user.getIsDamaged()) {
+				else if(0 <= user.getX() - monster.getX()&& (user.getX() - monster.getX())  <= (w * 0.5) && !user.getIsDamaged()) {
 					int hp = user.getHP();
 					hp -= 10;
 					//if
@@ -794,7 +760,6 @@ public class MapleStoryView extends JFrame {
 					int w = img.getWidth(myGamePanel);
 					int h = img.getHeight(myGamePanel);
 					
-					x = x + (w / 2);
 					y = y - h;
 					gc.drawImage(img,x,y,w,h,this);
 					continue;
@@ -809,7 +774,6 @@ public class MapleStoryView extends JFrame {
 					int w = img.getWidth(myGamePanel);
 					int h = img.getHeight(myGamePanel);
 					
-					x = x + (w / 2);
 					y = y - h;
 					gc.drawImage(img,x,y,w,h,this);
 					continue;
@@ -838,7 +802,6 @@ public class MapleStoryView extends JFrame {
 				int w = img.getWidth(myGamePanel);
 				int h = img.getHeight(myGamePanel);
 				
-				x = x + (w / 2);
 				y = y - h;
 				gc.drawImage(img,x,y,w,h,this);
 				
@@ -902,7 +865,6 @@ public class MapleStoryView extends JFrame {
 				int w = img.getWidth(myGamePanel);
 				int h = img.getHeight(myGamePanel);
 				
-				x = x + (w / 2);
 				y = y - h;
 				gc.drawImage(img,x,y,w,h,this);
 			}

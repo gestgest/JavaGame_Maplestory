@@ -17,7 +17,6 @@ public class User {
 	// 왼 공 12 13 14
 	// 오른 공 15 16 17
 	private ImageIcon image[];
-	private int type; //[전사 : 0, 법사 : 1, 궁수 : 2]
 	private int keybuff;
 	private int degree;
 	private int damagedTime;
@@ -35,24 +34,17 @@ public class User {
 	
 	
 	//없앨 내용 [로그인을 처음 했다면]
-	public User(String name,int type, int x, int y, ImageIcon image[])
+	public User(String name,int type, int x, int y)
 	{
 		this.name = name;
-		this.type = type;
 		this.x = x;
 		this.y = y;
 		
-		this.image = new ImageIcon[image.length];
-		for(int i = 0; i < image.length; i++)
-		{
-			this.image[i] = image[i];
-		}
 		init_User();
 	}
-	public User(String username, int type)
+	public User(String username)
 	{
 		this.name = username;
-		this.type = type;
 	}
 	
 	public User(User user)
@@ -80,13 +72,41 @@ public class User {
 		this.degree = 0;
 		this.hp = 100;
 		
+
+		int i = 0;
+		ImageIcon [][] userImageIcons = new ImageIcon[3][];
+		
+		userImageIcons[i] = new ImageIcon[18];
+		userImageIcons[i][0] = new ImageIcon("src/res/img/character/warrior/IdleLeft.png");
+		userImageIcons[i][1] = new ImageIcon("src/res/img/character/warrior/IdleRight.png");
+		userImageIcons[i][2] = new ImageIcon("src/res/img/character/warrior/WalkLeft1.png");
+		userImageIcons[i][3] = new ImageIcon("src/res/img/character/warrior/WalkLeft2.png");
+		userImageIcons[i][4] = new ImageIcon("src/res/img/character/warrior/WalkLeft3.png");
+		userImageIcons[i][5] = new ImageIcon("src/res/img/character/warrior/WalkLeft4.png");
+		userImageIcons[i][6] = new ImageIcon("src/res/img/character/warrior/WalkRight1.png");
+		userImageIcons[i][7] = new ImageIcon("src/res/img/character/warrior/WalkRight2.png");
+		userImageIcons[i][8] = new ImageIcon("src/res/img/character/warrior/WalkRight3.png");
+		userImageIcons[i][9] = new ImageIcon("src/res/img/character/warrior/WalkRight4.png");
+		userImageIcons[i][10] = new ImageIcon("src/res/img/character/warrior/JumpLeft.png");
+		userImageIcons[i][11] = new ImageIcon("src/res/img/character/warrior/JumpRight.png");
+		userImageIcons[i][12] = new ImageIcon("src/res/img/character/warrior/AttackLeft1.png");
+		userImageIcons[i][13] = new ImageIcon("src/res/img/character/warrior/AttackLeft2.png");
+		userImageIcons[i][14] = new ImageIcon("src/res/img/character/warrior/AttackLeft3.png");
+		userImageIcons[i][15] = new ImageIcon("src/res/img/character/warrior/AttackRight1.png");
+		userImageIcons[i][16] = new ImageIcon("src/res/img/character/warrior/AttackRight2.png");
+		userImageIcons[i][17] = new ImageIcon("src/res/img/character/warrior/AttackRight3.png");
+		
+
+		this.image = new ImageIcon[18];
+		for(i = 0; i < 18; i++)
+		{
+			this.image[i] = userImageIcons[0][i];
+		}
+		
 	}
 
 	public String getName() {return name; }
 	public void setName(String name) {this.name = name; }
-
-	public int getType() { return type; }
-	public void setType(int type ) { this.type = type; }
 	
 	public int getX() { return x; }
 	public int getY() { return y; }

@@ -4,20 +4,48 @@ import javax.swing.ImageIcon;
 
 public class User {
 	private String name;
-	private int x,y;
-	//¿©·¯°³ÀÇ ÀÌ¹ÌÁö
-	private ImageIcon image;
+
+	private int hp;
+	private int x,y; //ì‹¤ì œë¡  10000, 10000 => 100,100
+	//ì—¬ëŸ¬ê°œì˜ ì´ë¯¸ì§€
+	// ì™¼ìª½0
+	// ì˜¤ë¥¸ìª½1
+	// ì™¼ìª½ ê±·ê¸° 2 3 4 5
+	// ì˜¤ë¥¸ìª½ ê±·ê¸° 6 7 8 9
+	// ì™¼ ì©œ 10
+	// ì˜¤ë¥¸ ì©œ 11
+	// ì™¼ ê³µ 12 13 14
+	// ì˜¤ë¥¸ ê³µ 15 16 17
+	private ImageIcon image[];
 	private int keybuff;
+	private int degree;
+	private int damagedTime;
+	private boolean isLeft;
+	private boolean isJump;
+	private boolean isWalk;
+	private boolean isAttack;
+	private boolean isDamaged;
+	private long walkStart;
+	private long walkTime;
+	private long attackStart;
+	private long attackTime;
+	private long damagedStart;
+	private int velocity;
 	
 	
-	//¾ø¾Ù ³»¿ë [·Î±×ÀÎÀ» Ã³À½ Çß´Ù¸é]
-	public User(String name, int x, int y, ImageIcon image)
+	//ì—†ì•¨ ë‚´ìš© [ë¡œê·¸ì¸ì„ ì²˜ìŒ í–ˆë‹¤ë©´]
+	public User(String name,int type, int x, int y, ImageIcon image[])
 	{
 		this.name = name;
 		this.x = x;
 		this.y = y;
-		this.image = image;
-		//InitÇÔ¼ö·Î Ã³¸®ÇÏµç ÇØ¾ßÇÔ 
+		
+		this.image = new ImageIcon[image.length];
+		for(int i = 0; i < image.length; i++)
+		{
+			this.image[i] = image[i];
+		}
+		init_User();
 	}
 	public User(String username)
 	{
@@ -27,38 +55,96 @@ public class User {
 	public User(User user)
 	{
 		this.name = user.name;
-		this.image = user.image;
 		this.x = user.x;
 		this.y = user.y;
+		for(int i = 0; i < user.image.length; i++)
+		{
+			this.image[i] = user.getImg(i);
+		}
+	}
+	
+	private void init_User()
+	{
+		//Inití•¨ìˆ˜ë¡œ ì²˜ë¦¬í•˜ë“  í•´ì•¼í•¨ 
+		this.isLeft = true;
+		this.isJump = true;
+		this.isWalk = false;
+		this.isAttack = false;
+		this.walkStart = 0;
+		this.walkTime = 0;
+		this.velocity = 0;
+		this.keybuff = 0;
+		this.degree = 0;
+		this.hp = 100;
+		
 	}
 
 	public String getName() {return name; }
 	public void setName(String name) {this.name = name; }
+	
 	public int getX() { return x; }
 	public int getY() { return y; }
 	public void setX(int x) { this.x = x; }
-	public void setY(int y) { this.x = y; }
+	public void setY(int y) { this.y = y; }
 	public void setX(String x) { this.x = Integer.parseInt(x); }
 	public void setY(String y) { this.y = Integer.parseInt(y); }
 
 	public int getKeybuff() { return keybuff; }
 	public void setKeybuff(int keybuff) { this.keybuff = keybuff; }
-	
+	public int getHP() { return hp; }
+	public void setHP(int hp) { this.hp = hp; }
 
-	public ImageIcon getImg() {
-		return image;
+	public int getDegree() { return degree; }
+	public void setDegree(int degree) { this.degree = degree; }
+	public int getDamagedTime() { return damagedTime; }
+	public void setDamagedTime(int damagedTime) { this.damagedTime = damagedTime; }
+	
+	public boolean getIsLeft() { return isLeft; }
+	public void setIsLeft(boolean isLeft) { this.isLeft = isLeft; }
+	public boolean getIsJump() { return isJump; }
+	public void setIsJump(boolean isJump) { this.isJump = isJump; }
+	public boolean getIsWalk() { return isWalk; }
+	public void setIsWalk(boolean isWalk) { this.isWalk = isWalk; }
+	public boolean getIsAttack() { return isAttack; }
+	public void setIsAttack(boolean isAttack) { this.isAttack = isAttack; }
+	public boolean getIsDamaged() { return isDamaged; }
+	public void setIsDamaged(boolean isDamaged) { this.isDamaged = isDamaged; }
+	
+	
+	public int getVelocity() { return velocity; }
+	public void setVelocity(int velocity) { this.velocity = velocity; }
+
+	public long getWalkStart() { return walkStart; }
+	public void setWalkStart(long walkStart) { this.walkStart = walkStart; }
+	public long getWalkTime() { return walkTime; }
+	public void setWalkTime(long walkTime) { this.walkTime = walkTime; }
+	public long getAttackStart() { return attackStart; }
+	public void setAttackStart(long attackStart) { this.attackStart = attackStart; }
+	public long getAttackTime() { return attackTime; }
+	public void setAttackTime(long attackTime) { this.attackTime = attackTime; }
+	public long getDamagedStart() { return damagedStart; }
+	public void setDamagedStart(long damagedStart) { this.damagedStart = damagedStart; }
+	
+	
+	//index : 0 : leftidle
+	//1 : rightidle
+	public ImageIcon getImg(int index) {
+		if(image.length <= index)
+			return image[0];
+		return image[index];
 	}
 	
-	public void setImg(ImageIcon image) {
-		this.image = image;
+	
+	public void setImg(ImageIcon image, int index) {
+		this.image[index] = image;
 	}
 	
-	//Á÷¾÷
+	//ì§ì—…
 	
 	//hp
-	//¸¶³ª
-	//°æÇèÄ¡
-	//°ø°İ·Â
+	//ë§ˆë‚˜
+	//ê²½í—˜ì¹˜
+	//ê³µê²©ë ¥
 	//
 	
 	
