@@ -18,7 +18,7 @@ public class MapleStoryMsg implements Serializable {
 	//코드와 짜잘한 x,y와 같은 사소한 data값을 넣고 프로토콜로 분류한다
 
 	//100 [로그인]
-	//유저이름 프로토콜 유저정보
+	//유저이름 프로토콜 x,y
 	//101
 	//유저이름 프로토콜 x
 	//102
@@ -40,6 +40,8 @@ public class MapleStoryMsg implements Serializable {
 	//private boolean isDamaged;
 	//110
 	//유저이름 프로토콜 유저 이미지타입
+	//400
+	//로그아웃
 	
 
 	public MapleStoryMsg(String code) {
