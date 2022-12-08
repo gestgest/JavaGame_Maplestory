@@ -768,7 +768,8 @@ public class MapleStoryView extends JFrame {
 				int x = user.getX() / 100;
 				int y = user.getY() / 100;
 				Image img;
-				
+
+				System.out.println("");
 
 				if(user.getIsAttack())
 				{
