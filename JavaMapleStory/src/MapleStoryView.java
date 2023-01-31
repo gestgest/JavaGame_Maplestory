@@ -394,6 +394,10 @@ public class MapleStoryView extends JFrame {
 						adduser = users.get(cm.getName());
 						adduser.setType(cm.getType());
 						break;
+					case "300":
+						monsters.add(new Monster());
+						System.out.println("몬스터 사이즈 : "+monsters.size());
+						break;
 					case "400":
 						//x,y
 						users.remove(cm.getName());
@@ -993,8 +997,8 @@ public class MapleStoryView extends JFrame {
 
 					
 					//프레임 유지
-					if(System.currentTimeMillis()-pretime < 30) {
-						Thread.sleep(30 - System.currentTimeMillis()+pretime);
+					if(System.currentTimeMillis()-pretime < 35) {
+						Thread.sleep(35 - System.currentTimeMillis()+pretime);
 						SendObjectType("110", user.getName(), user.getType());
 						
 

@@ -40,6 +40,12 @@ public class MapleStoryMsg implements Serializable {
 	//private boolean isDamaged;
 	//110
 	//유저이름 프로토콜 유저 이미지타입
+	//113
+	//이미지 타입 + xy
+	//300
+	//슬라임 생성
+	//303
+	//슬라임 x,y
 	//400
 	//로그아웃
 	

@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import data.MapleStoryMsg;
+import data.Monster;
 import data.User;
 
 import javax.swing.JScrollPane;
@@ -51,11 +52,16 @@ public class JavaObjServer extends JFrame {
 	 * Launch the application.
 	 */
 	//////////////////////////////////////////////////////////
+
+	private final int RESPAWN_TIME = 15000;
+	private final int MAX_MONSTER_COUNT = 5; //최대 슬라임 개수
 	
 	/////////////////////
 	//자작변수
 	long pretime;
-	int delay = 300; //56프레임
+	int delay = 30; 
+
+	private Vector<Monster> monsters = new Vector<Monster>(MAX_MONSTER_COUNT);
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -119,6 +125,8 @@ public class JavaObjServer extends JFrame {
 				
 				//TimeThread timeThread = new TimeThread();
 				//timeThread.start();
+				//SendThread sendThread = new SendThread();
+				//sendThread.start();
 			}
 		});
 		btnServerStart.setBounds(12, 356, 300, 35);
@@ -178,6 +186,9 @@ public class JavaObjServer extends JFrame {
 	//서버 시간 관리 스레드
 	class TimeThread extends Thread 
 	{
+		private boolean isSpawn = false;
+		private long spawnStart;
+		private final int animationTime = 125;
 		@Override
 		public void run() 
 		{
@@ -187,8 +198,8 @@ public class JavaObjServer extends JFrame {
 				pretime=System.currentTimeMillis();
 				
 				//메세지 뿌리기 [key 버퍼가 1인경우 2인경우]
-				moveUser();
-
+				monsterRespawn();
+				monster_process();
 				//AppendText("삐약");
 				
 				try {
@@ -204,42 +215,131 @@ public class JavaObjServer extends JFrame {
 			}
 		}
 		
-		//이동함수
-		public void moveUser()
-		{
-			int x;
-			for(int i = 0; i < UserVec.size(); i++)
+		private void monsterRespawn() {
+			//spawnStart
+			if(monsters.size() < MAX_MONSTER_COUNT)
 			{
-				UserService us = UserVec.get(i);
-				User u = us.getUser();
-				MapleStoryMsg msg;
-				switch(u.getKeybuff()) {
-				case LEFT_PRESSED:
-					x = u.getX()- 2;
-					u.setX(x);
-					msg = new MapleStoryMsg("101");
-					msg.setX(x);
-					msg.setName(u.getName());
+				if(!isSpawn) {
+					spawnStart = pretime;
+					isSpawn = true;
 
-					us.WriteAllObject(msg);
-					break;
-					
-				case RIGHT_PRESSED:
-					x = u.getX()+ 2;
-					u.setX(x);
-					msg = new MapleStoryMsg("101");
-					msg.setX(x);
-					msg.setName(u.getName());
-
-					us.WriteAllObject(msg);
-					break;
+					return;
+				}
+				//대기 시간이 지나면 슬라임 리스폰
+				if(RESPAWN_TIME <= pretime - spawnStart)
+				{
+					int count = (int) (Math.random() * 3 + 1);
+					isSpawn = false;
+					for(int i = 0; i < count && monsters.size() < 5; i++)
+					{
+						//이미지들
+						Monster monster = new Monster();
+						monsters.add(monster);
+					}
+				}
+			}
+		}
+		private void monster_process() {
+			for(int i = 0; i < monsters.size(); i++)
+			{
+				Monster monster = monsters.get(i);
+				
+				if(monster.getIsDead())
+				{
+					monster.setDeadTime((int)(pretime - monster.getDeadStart()));
+					if(animationTime * 4 <= monster.getDeadTime()) {
+						monsters.remove(i);
+						continue;
+					}
 				}
 				
+				//아무 행동을 안한 경우 [idle상태 + 걷지도 않는 경우]
+				if(!monster.getIsThinking() && !monster.getIsWalk())
+				{
+					monster.setThinkStart(pretime);
+					monster.setIsThinking(true);
+					int time = (int)(Math.random() * 2000 + 3000);
+					monster.setThinkTime(time);
+				}
+				//행동
+				else if(!monster.getIsWalk() && monster.getIsThinking())
+				{
+					//행동 개시
+					if(monster.getThinkTime() < pretime - monster.getThinkStart())
+					{
+						int degree = (int)(Math.random() * 3) - 1;
+
+						if(degree != 0)
+						{
+							monster.setWalkStart(pretime);
+							int time = (int)(Math.random() * 2000 + 3000);
+							monster.setWalkTime(time);
+							monster.setDegree(degree);
+							monster.setIsWalk(true);
+						}
+						monster.setIsThinking(false);
+						
+					}
+				}
+				else if(monster.getIsWalk())
+				{ 
+					int x = monster.getX();
+					//다 걸음
+					if(monster.getWalkTime() < pretime - monster.getWalkStart())
+					{
+						monster.setIsWalk(false);
+						
+					}
+					///////////움직이는 함수
+					x += monster.getDegree() * 100;
+
+					if(x < 0)
+						x = 0;
+					else if(800 * 100 - 4600 < x)
+						x = 800 * 100 - 4600;
+					
+					monster.setX(x);
+				}
+
 			}
+			
 		}
 	}
 	
-	
+	private class SendThread extends Thread{
+		@Override
+		public void run() 
+		{
+			while (true) 
+			{
+				
+				sendObject();
+				try {
+					
+					if(System.currentTimeMillis()-pretime < 100)
+						Thread.sleep(100 - System.currentTimeMillis()+pretime);
+				
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					AppendText("시간 오류");
+				}
+			}
+		}
+		
+		private void sendObject() {
+			MapleStoryMsg msg  = new MapleStoryMsg("300");
+			
+			
+			for(int i = 0; i < UserVec.size(); i++) {
+				UserService userservice = UserVec.get(i);
+				
+				for(int j = 0; j < monsters.size(); j++) {
+					userservice.WriteOneObject(msg);
+				}
+			}
+		}
+	}
 	
 	
 	
@@ -344,7 +444,7 @@ public class JavaObjServer extends JFrame {
 						//WriteAllObject(cm);
 						user.setX(cm.getX());
 						user.setY(cm.getY());
-						AppendText(user.getX() + " " + user.getY());
+						//AppendText(user.getX() + " " + user.getY());
 						WriteOhtersObject(cm);
 						break;
 					case "104":
@@ -362,18 +462,11 @@ public class JavaObjServer extends JFrame {
 					case "110":
 						WriteOhtersObject(cm);
 						break;
+					case "113":
+						WriteOhtersObject(cm);
+						break;
 					}
 					
-					if (cm.getCode().matches("200")) {
-					} else if (cm.getCode().matches("300")) {
-						WriteAllObject(cm);
-					} else if (cm.getCode().matches("400")) { // logout message 처리 로그아웃
-						Logout();
-						break;
-					}  else if (cm.getCode().matches("500")) {
-					}  else if (cm.getCode().matches("600")) {
-					}  else if (cm.getCode().matches("700")) {
-					} 
 				} catch (IOException e) {
 					AppendText("ois.readObject() error");
 					try {
